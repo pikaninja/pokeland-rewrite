@@ -1,4 +1,5 @@
 from discord.ext import commands
+from data.manager import DataManager
 import logging
 import sys
 import asyncpg
@@ -12,10 +13,15 @@ class Pokeland(commands.Bot):
         self.logger = logging.getLogger('discord')
         self.logger.setLevel(logging.INFO)
         self.logger.addHandler(logging.StreamHandler(sys.stdout))
+        self.data = DataManager()
 
         super().__init__(command_prefix=self.config.prefix)
 
         self.loop.run_until_complete(self.setup())
+
+    @property
+    def db(self):
+        return self.get_cog("Database")
 
     async def setup(self):
         self.connection = await asyncpg.create_pool(self.config.db_string)

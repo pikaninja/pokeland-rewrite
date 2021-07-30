@@ -4,11 +4,12 @@ CREATE TABLE users(
     id BIGINT PRIMARY KEY,
     started TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     disabled BOOL DEFAULT FALSE,
+    selected INT,
     --economy stuff
     bal BIGINT NOT NULL, 
     redeem BIGINT NOT NULL,
     --xp stuff
-    xp_share BIGINT ,
+    xp_share BIGINT DEFAULT NULL,
     xp_boost_end TIMESTAMP DEFAULT NULL,
     --voting
     last_voted TIMESTAMP DEFAULT NULL,
