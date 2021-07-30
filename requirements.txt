@@ -1,0 +1,4 @@
+discord.py
+asyncpg
+jishaku
+git+https://github.com/bijij/discord-ext-store-true

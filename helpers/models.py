@@ -1,15 +1,46 @@
 import math
+import datetime
+from dataclasses import dataclass
+
+
+@dataclass
+class User:
+    # general
+    id: int
+    started: datetime.datetime
+    disabled: bool
+    order_by: str
+    selected: int
+    # economy
+    bal: int
+    redeem: int
+    # xp
+    xp_share: int
+    xp_boost_end: int
+    # votes
+    last_voted: datetime.datetime
+    total_votes: int
+    # settings
+    hide_levelup: bool
+
+
 mapping = {
     "atk": "attack",
     "def": "defense",
     "spdef": "special_defense",
     "spatk": "special_attack",
-    "spd": "speed"
+    "spd": "speed",
 }
+
+
 class Pokemon:
     def __init__(self, record, data=None):
         self.record = record
-        self.data_manager = data 
+        self.data_manager = data
+
+    @property
+    def idx(self):
+        return self.record["idx"]
 
     @property
     def species_id(self):
@@ -24,62 +55,63 @@ class Pokemon:
         if not self.data:
             return None
 
-        return self.data["name"]
+        return self.data["name"].title()
 
     @property
     def shiny(self):
-        return self.record['shiny']
+        return self.record["shiny"]
 
     @property
     def nature(self):
-        return self.record['nature']
+        return self.record["nature"]
 
     @property
     def item(self):
-        return  self.record['item']
+        return self.record["item"]
 
     @property
     def level(self):
-        return self.record['level']
+        return self.record["level"]
 
     @property
     def xp(self):
-        return self.record['xp']
+        return self.record["xp"]
 
     @property
     def iv_percent(self):
-        return self.record['total_iv']/186
-    
+        return self.record["total_iv"] / 186
+
     @property
     def hp_iv(self):
-        return self.record['hp_iv']    
+        return self.record["hp_iv"]
 
     @property
     def atk_iv(self):
-        return self.record['atk_iv']
+        return self.record["atk_iv"]
 
     @property
     def def_iv(self):
-        return self.record['def_iv']
+        return self.record["def_iv"]
 
     @property
     def spatk_iv(self):
-        return self.record['spatk_iv']
+        return self.record["spatk_iv"]
 
     @property
     def spdef_iv(self):
-        return self.record['spdef_iv']
+        return self.record["spdef_iv"]
 
     @property
     def spd_iv(self):
-        return self.record['spd_iv']
+        return self.record["spd_iv"]
 
     def stat(self, stat):
         iv = self.record[f"{stat}_iv"]
         if stat == "hp":
-            return math.floor((2*self.data["hp"] + self.hp_iv) * self.level / 100 + self.level + 10)
+            return math.floor(
+                (2 * self.data["hp"] + self.hp_iv) * self.level / 100 + self.level + 10
+            )
 
-        return math.floor(math.floor((2*self.data[mapping[stat]] + self.level) * self.level / 100 + 5))
-
-
-         
+        return math.floor(
+            math.floor((2 * self.data[mapping[stat]] + iv) * self.level / 100 + 5)
+        )

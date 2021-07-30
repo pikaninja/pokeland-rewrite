@@ -4,6 +4,7 @@ CREATE TABLE users(
     id BIGINT PRIMARY KEY,
     started TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     disabled BOOL DEFAULT FALSE,
+    order_by TEXT DEFAULT 'idx',
     selected INT,
     --economy stuff
     bal BIGINT NOT NULL, 

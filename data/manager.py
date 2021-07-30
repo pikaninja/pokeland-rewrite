@@ -1,5 +1,7 @@
 import json
 from functools import cached_property
+
+
 class DataManager:
     def __init__(self):
         with open("data/pokemon.json") as f:
@@ -16,10 +18,10 @@ class DataManager:
     def name_to_species(self):
         mapping = {}
         for id, poke in self.data.items():
-            mapping[poke['name']] = poke
-            if jp := poke.get('japanese'):
+            mapping[poke["name"]] = poke
+            if jp := poke.get("japanese"):
                 mapping[jp.lower()] = poke
-            if kana := poke.get('kana'):
+            if kana := poke.get("kana"):
                 mapping[kana] = poke
         return mapping
 
@@ -28,7 +30,3 @@ class DataManager:
 
     def get_species_by_id(self, id):
         return self.data.get(id)
-
-
-
-
