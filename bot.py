@@ -1,6 +1,7 @@
 from discord.ext import commands
 import logging
 import sys
+import asyncpg
 
 class Pokeland(commands.Bot):
     """The custom subclass for the bot"""
@@ -17,6 +18,7 @@ class Pokeland(commands.Bot):
         self.loop.run_until_complete(self.setup())
 
     async def setup(self):
+        self.connection = await asyncpg.create_pool(self.config.db_string)
         for extension in self.config.extensions:
             self.load_extension(extension)
 

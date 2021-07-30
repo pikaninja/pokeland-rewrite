@@ -1,0 +1,8 @@
+[bot]
+token = "..."
+prefix = "p!"
+extensions = []
+extra = ["helpers.database", "jishaku"]
+
+[database]
+string = "..."

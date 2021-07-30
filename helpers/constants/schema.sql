@@ -16,12 +16,12 @@ CREATE TABLE users(
     --settings
     hide_levelup BOOL DEFAULT FALSE
 );
-CREATE TABLE guild(
+CREATE TABLE guilds(
     id BIGINT PRIMARY KEY,
     prefix TEXT DEFAULT NULL,
     compact BOOL DEFAULT NULL
 );
-CREATE TABLE channel(
+CREATE TABLE channels(
     id BIGINT PRIMARY KEY,
     guild_id BIGINT NOT NULL,
     disabled BOOL DEFAULT FALSE
