@@ -26,13 +26,13 @@ class Database(commands.Cog):
 
         return None
 
-    def format_quary(self, update, start=2):
-        quary = ", ".join(f"{c} = ${i}" for i, c in enumerate(update, start))
+    def format_query(self, update, start=2):
+        query = ", ".join(f"{c} = ${i}" for i, c in enumerate(update, start))
         args = []
         for item in update:
             args.append(update[item])
 
-        return quary, args
+        return query, args
 
     async def get_user(self, id, *, connection=None):
         connection = connection or self.connection
@@ -53,9 +53,9 @@ class Database(commands.Cog):
     async def update_pokemon_by_idx(self, user_id, idx, update, *, connection=None):
         connection = connection or self.connection
         user_id = self.get_id_from_object(user_id)
-        quary, args = self.format_quary(update, 3)
+        query, args = self.format_query(update, 3)
         await connection.execute(
-            f"UPDATE pokemon SET {quary} WHERE user_id = $1 AND idx = $2",
+            f"UPDATE pokemon SET {query} WHERE user_id = $1 AND idx = $2",
             *([user_id, id] + args),
         )
 
@@ -73,7 +73,7 @@ class Database(commands.Cog):
         id = self.get_id_from_object(user)
         connection = connection or self.connection
 
-        quary = f"INSERT INTO pokemon(user_id, idx, species_id, level, xp, nature, shiny, hp_iv, atk_iv, def_iv, spatk_iv, spdef_iv, spd_iv, moves) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *"
+        query = f"INSERT INTO pokemon(user_id, idx, species_id, level, xp, nature, shiny, hp_iv, atk_iv, def_iv, spatk_iv, spdef_iv, spd_iv, moves) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *"
         values = [
             id,
             await self.get_next_idx(id, connection=connection),
@@ -85,7 +85,7 @@ class Database(commands.Cog):
             *self.random_ivs(),
             ["Tackle"] * 4,
         ]
-        return models.Pokemon(await connection.fetchrow(quary, *values), self.bot.data)
+        return models.Pokemon(await connection.fetchrow(query, *values), self.bot.data)
 
     async def register(self, id, *, connection=None):
         connection = connection or self.connection
