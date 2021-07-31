@@ -1,10 +1,11 @@
 import discord
 import typing
-from typing import List
-from discord.ext import commands
-from collections import defaultdict
-from helpers import constants, converters, models, checks, flags
 
+from typing import List
+from collections import defaultdict
+
+from discord.ext import commands
+from helpers import constants, converters, models, checks, flags
 
 class PokemonFilters(flags.PosixFlags):
     name: List[str] = None

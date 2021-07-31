@@ -1,10 +1,11 @@
 import io
 import discord
 import traceback
-from typing import Literal, Union
-from helpers import constants, misc, checks
-from discord.ext import commands
 
+from typing import Literal, Union
+
+from discord.ext import commands
+from helpers import constants, misc, checks
 
 class Meta(commands.Cog):
     """Commands for bot configuration"""
