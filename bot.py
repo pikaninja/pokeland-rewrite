@@ -18,8 +18,10 @@ class LoggingFormat(logging.Formatter):
         }
         return ", ".join(f"{key}={value}" for key, value in arguments.items())
 
-def prefix(bot, message):
-    return bot.get_cog("Meta").get_prefix(message.channel.guild)
+async def prefix(bot, message):
+    if not message.guild:
+        return commands.when_mentioned_or(bot.config.prefix)(bot, message)
+    return commands.when_mentioned_or(await bot.get_cog("Meta").get_prefix(message.channel.guild))(bot, message)
 
 class Pokeland(store_true.StoreTrueMixin, commands.Bot):
     """The custom subclass for the bot"""
@@ -35,7 +37,7 @@ class Pokeland(store_true.StoreTrueMixin, commands.Bot):
         self.logger.addHandler(handler)
         self.data = DataManager()
 
-        super().__init__(command_prefix=prefix)
+        super().__init__(command_prefix=prefix, case_insensitive=True)
 
         self.loop.run_until_complete(self.setup())
 
@@ -61,7 +63,7 @@ class Pokeland(store_true.StoreTrueMixin, commands.Bot):
             extra = {
                 "id": ctx.author.id,
                 "tag": str(ctx.author),
-                "guild_id": ctx.guild.id,
+                "guild_id": ctx.guild.id if ctx.guild else None,
                 "guild": str(ctx.guild),
                 "content": ctx.message.content
             }

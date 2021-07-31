@@ -1,4 +1,5 @@
 import math
+from typing import List
 import datetime
 from dataclasses import dataclass
 
@@ -8,6 +9,7 @@ class Guild:
     id: int
     prefix: str
     compact: bool
+    redirects: List[int]
 
 @dataclass
 class User:

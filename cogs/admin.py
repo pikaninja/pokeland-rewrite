@@ -1,5 +1,12 @@
+import io
 import discord
+import textwrap
+import traceback
+from helpers import misc
 from discord.ext import commands
+from prettytable import PrettyTable
+from contextlib import redirect_stdout
+from jishaku.codeblocks import codeblock_converter
 
 class Admin(commands.Cog):
     """Commands for bot administration"""
@@ -34,6 +41,65 @@ class Admin(commands.Cog):
             target, pokemon["species_id"], shiny=shiny
         )
         await ctx.message.add_reaction("\U00002705")
+
+    @dev.command()
+    async def sql(self, ctx, *, code):
+        """Run an sql query"""
+        query = codeblock_converter(code).content
+        with misc.StopWatch() as s:
+            records = await ctx.bot.connection.fetch(query)
+
+        if not records:
+            return await ctx.send(f"Executed in *`{s.time*1000:,.2f}`ms*")
+
+        table = PrettyTable()
+        table.field_names = [*records[0].keys()]
+        for record in records:
+            table.add_row([*record.values()])
+        await ctx.send(f"Returned {len(records)} rows in *`{s.time*1000:,.2f}ms`*\n```{table.get_string()}```")
+
+
+    @dev.command(name="eval")
+    async def _eval(self, ctx, *, code):
+        """Evaluate code"""
+        code = codeblock_converter(code).content
+
+        code = textwrap.indent(code, "    ")
+
+        code = f"async def func():{code}"
+
+        env = {
+            "discord": discord,
+            "ctx": ctx,
+            "guild": ctx.guild,
+            "author": ctx.author,
+            "bot": ctx.bot,
+            "commands": commands
+        }
+
+        exec(code, env)
+        func = env['func']
+
+        stdout = io.StringIO()
+
+        try:
+            with redirect_stdout(stdout):
+                result = await func()
+        except Exception:
+            value = stdout.getvalue()
+            return  await ctx.send(f"```{value}\n{traceback.format_exc()}```")
+        value = stdout.getvalue()
+
+        try:
+            await ctx.message.add_reaction("\u2705")
+        except:
+            pass
+        
+        output = f"```{value}\n{result}```"
+        await ctx.send(output)
+
+
+
 
 
 def setup(bot):

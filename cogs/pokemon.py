@@ -88,7 +88,7 @@ class Pokemon(commands.Cog):
         if pokemon.item:
             embed.add_field(name="Held Item", value=pokemon.item)
 
-        embed.set_image(url=data["shiny"] if pokemon.shiny else data["normal"])
+        embed.compact_image(await self.bot.db.get_guild(ctx.guild), url=data["shiny"] if pokemon.shiny else data["normal"])
 
         await ctx.send(embed=embed)
 
@@ -167,7 +167,7 @@ class Pokemon(commands.Cog):
         embed.add_field(name="Types", value=(
             ", ".join(pokemon['types'])
         ))
-        embed.set_image(url=pokemon['normal'] if not shiny else pokemon['shiny'])
+        embed.compact_image(await self.bot.db.get_guild(ctx.guild), url=pokemon['normal'] if not shiny else pokemon['shiny'])
         await ctx.send(embed=embed)
 
 def setup(bot):

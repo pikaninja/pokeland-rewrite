@@ -2,4 +2,5 @@ discord.py
 asyncpg
 jishaku
 psutil
+prettytable
 git+https://github.com/bijij/discord-ext-store-true

@@ -21,7 +21,8 @@ CREATE TABLE users(
 CREATE TABLE guilds(
     id BIGINT PRIMARY KEY,
     prefix TEXT DEFAULT NULL,
-    compact BOOL DEFAULT NULL
+    compact BOOL DEFAULT NULL,
+    redirects BIGINT[] DEFAULT NULL
 );
 CREATE TABLE channels(
     id BIGINT PRIMARY KEY,

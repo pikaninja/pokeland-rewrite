@@ -25,7 +25,9 @@ class Spawning(commands.Cog):
         )[0]
         return pokemon
 
-    async def spawn_pokemon(self, channel, pokemon=None):
+    async def spawn_pokemon(self, channel, pokemon=None, *, guild=None):
+        if not guild:
+            guild = await self.bot.db.get_guild(channel.guild)
         pokemon = self.bot.data.get_species_by_name(pokemon) if pokemon else self.random_pokemon()
         self.spawns[channel.id]["pokemon"] = pokemon
         self.spawns[channel.id]["count"] = 0
@@ -35,7 +37,7 @@ class Spawning(commands.Cog):
             title="A wild pokemon as appeared!",
             description=f"Guess the pokémon's name and type `{await self.bot.get_cog('Meta').get_prefix(channel.guild)}catch <pokemon>` to catch it!",
         )
-        embed.set_image(url=pokemon["normal"])
+        embed.compact_image(guild, url=pokemon["normal"])
 
         await channel.send(embed=embed)
 
@@ -101,22 +103,21 @@ class Spawning(commands.Cog):
                     while pokemon.xp >= pokemon.xp_needed:
                         pokemon.xp -= pokemon.xp_needed
                         pokemon.level += 1
-                    if not user.hide_levelup:
-                        embed.description = f"Your {pokemon.name} is now level {pokemon.level}!"
+                    embed.description = f"Your {pokemon.name} is now level {pokemon.level}!"
 
                     data = self.bot.data.get_species_by_id(pokemon.species_id)
                     if pokemon.level >= data['evolution_level']:
                         oldname = pokemon.name
                         pokemon.species_id = data['evolution'] 
                         embed.add_field(name="Whats this?", value=f"Your {oldname} evolved into {pokemon.name}!")
-
-                    await message.channel.send(embed=embed)
+                     
+                    if not user.hide_levelup:
+                        await message.channel.send(embed=embed)
 
 
 
                 await self.bot.db.update_pokemon_by_idx(message.author, user.selected, dict(species_id=pokemon.species_id, xp=pokemon.xp, level=pokemon.level), connection=conn)
                 
-                pokemon.xp_needed
 
     @commands.Cog.listener("on_message")
     async def spawning(self, message):
@@ -134,7 +135,12 @@ class Spawning(commands.Cog):
             self.spawns[message.channel.id]["count"]
             >= self.spawns[message.channel.id]["goal"]
         ):
-            await self.spawn_pokemon(message.channel)
+            guild = await self.bot.db.get_guild(message.guild)
+            if not guild or not guild.redirects:
+                channel = message.channel
+            else:
+                channel = message.guild.get_channel(random.choice(guild.redirects))
+            await self.spawn_pokemon(channel, guild=guild)
 
         await self.calculate_xp(message)
 

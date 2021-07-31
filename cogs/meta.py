@@ -1,6 +1,7 @@
 import discord
 import traceback
-from helpers import constants, misc
+from typing import Literal, Union
+from helpers import constants, misc, checks
 from discord.ext import commands
 
 class Meta(commands.Cog):
@@ -14,12 +15,37 @@ class Meta(commands.Cog):
             return self.bot.config.prefix
         return guild.prefix or self.bot.config.prefix
 
+    @commands.command()
+    @commands.has_permissions(manage_guild=True)
+    async def redirect(self, ctx, channels: commands.Greedy[discord.TextChannel]):
+        """Config the redirect settings for the server, when set, all spawns will be redirected to these channels"""
+        if not channels:
+            guild = await ctx.bot.db.get_guild(ctx.guild)
+            if not guild or not guild.redirects:
+                return await ctx.send("There's no redirects active currently!")
+            return await ctx.send(f"The current redirected channels are {', '.join(f'<#{id}>' for id in guild.redirects)}")
+
+        await ctx.bot.connection.execute("INSERT INTO guilds(id, redirects) VALUES ($1, $2) ON CONFLICT(id) DO UPDATE SET redirects = $2", ctx.guild.id, [channel.id for channel in channels])
+        await ctx.send(f"Set the redirects to {', '.join(channel.mention for channel in channels)} All pokemon will be redirected to these channels!")
+
+    @commands.command(aliases=("silence", "hide"))
+    @checks.has_started()
+    async def hide_levelup(self, ctx, option: Literal['toggle', 'true', 'false']):
+        """Toggles whether or not to send messages on levelup"""
+        toggle = await ctx.bot.connection.fetchval("UPDATE users SET hide_levelup = NOT hide_levelup WHERE id = $1 RETURNING hide_levelup", ctx.author.id)
+
+        if toggle:
+            await ctx.send("Alright, I will no longer send levelup messages.")
+        else:
+            await ctx.send("Alright, I will send levelup messages again")
+
     @commands.group(invoke_without_command=True, case_insensitive=True)
     async def prefix(self, ctx):
         """The group command for prefix management, use with no subcommand to view current prefix"""
         await ctx.send(f"The current prefix is `{await self.get_prefix(ctx.channel.guild)}` You can also mention me!")
             
     @prefix.command()
+    @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
     async def set(self, ctx, prefix):
         """Set the prefix for the guild to somethign else"""
@@ -27,6 +53,7 @@ class Meta(commands.Cog):
         await ctx.send(f"Set the server prefix to `{prefix}`")
 
     @prefix.command()
+    @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
     async def reset(self, ctx, prefix):
         """Reset the prefix to the default prefix"""
@@ -101,6 +128,7 @@ class Meta(commands.Cog):
             traceback_text = ''.join(lines)
 
             await self.bot.get_channel(self.bot.config.error_log_channel_id).send(f"```{traceback_text}```")
+            await ctx.send("Uh-oh! An unexpected error occured! This error has been logged and will be fixed as soon as possible.")
 
 def setup(bot):
     bot.add_cog(Meta(bot))
