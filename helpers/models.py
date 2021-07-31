@@ -5,11 +5,19 @@ from dataclasses import dataclass
 
 
 @dataclass
+class Channel:
+    id: int
+    guild_id: int
+    spawns_disabled: bool
+    disabled: bool
+
+@dataclass
 class Guild:
     id: int
     prefix: str
     compact: bool
     redirects: List[int]
+
 
 @dataclass
 class User:
@@ -121,7 +129,7 @@ class Pokemon:
 
     @property
     def xp_needed(self):
-        return 200 + 25*self.level
+        return 200 + 25 * self.level
 
     def stat(self, stat):
         iv = self.record[f"{stat}_iv"]

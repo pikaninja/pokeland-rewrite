@@ -19,7 +19,7 @@ class DataManager:
         return {
             species_id: poke
             for species_id, poke in self.data.items()
-            if poke.get('rarity') == "legendary"
+            if poke.get("rarity") == "legendary"
         }
 
     @cached_property
@@ -27,7 +27,7 @@ class DataManager:
         return {
             species_id: poke
             for species_id, poke in self.data.items()
-            if poke.get('rarity') == "mythical"
+            if poke.get("rarity") == "mythical"
         }
 
     @cached_property
@@ -35,7 +35,7 @@ class DataManager:
         return {
             species_id: poke
             for species_id, poke in self.data.items()
-            if poke.get('rarity') == "ultra_beast"
+            if poke.get("rarity") == "ultra_beast"
         }
 
     @cached_property

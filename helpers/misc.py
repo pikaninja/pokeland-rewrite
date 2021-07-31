@@ -1,4 +1,6 @@
 import time
+
+
 class StopWatch:
     def __enter__(self, *args):
         self.start = time.perf_counter()
@@ -9,5 +11,4 @@ class StopWatch:
 
     @property
     def time(self):
-        return self.end-self.start
-
+        return self.end - self.start

@@ -88,7 +88,10 @@ class Pokemon(commands.Cog):
         if pokemon.item:
             embed.add_field(name="Held Item", value=pokemon.item)
 
-        embed.compact_image(await self.bot.db.get_guild(ctx.guild), url=data["shiny"] if pokemon.shiny else data["normal"])
+        embed.compact_image(
+            await self.bot.db.get_guild(ctx.guild),
+            url=data["shiny"] if pokemon.shiny else data["normal"],
+        )
 
         await ctx.send(embed=embed)
 
@@ -100,7 +103,12 @@ class Pokemon(commands.Cog):
         """View your pokemon"""
         filters = defaultdict(list)
         if flags and flags.name:
-            filters["species_id"].extend([self.bot.data.get_species_by_name(name)["species_id"] for name in flags.name])
+            filters["species_id"].extend(
+                [
+                    self.bot.data.get_species_by_name(name)["species_id"]
+                    for name in flags.name
+                ]
+            )
         if flags and flags.level:
             filters["level"].extend([level for level in flags.level])
         if flags and flags.legendary:
@@ -111,16 +119,14 @@ class Pokemon(commands.Cog):
             filters["in_species_id"].append(list(self.bot.data.ultra_beast.keys()))
 
         if filters:
-            query, args = self.bot.db.format_query_list(filters, _or = flags._or, start=5)
+            query, args = self.bot.db.format_query_list(filters, _or=flags._or, start=5)
             query = f"AND ({query})"
         else:
             query = ""
             args = []
         lower = (page - 1) * 20 + 1
         upper = (page) * 20
-        query = (
-            f"SELECT * FROM (SELECT *, rank() over(order by ($1)) as rank FROM pokemon) as _ WHERE user_id = $2 AND rank >= $3 AND rank <= $4 {query} ORDER BY rank ASC"
-        )
+        query = f"SELECT * FROM (SELECT *, rank() over(order by ($1)) as rank FROM pokemon) as _ WHERE user_id = $2 AND rank >= $3 AND rank <= $4 {query} ORDER BY rank ASC"
         pokemons = [
             models.Pokemon(pokemon, self.bot.data)
             for pokemon in await self.bot.connection.fetch(
@@ -129,7 +135,7 @@ class Pokemon(commands.Cog):
                 ctx.author.id,
                 lower,
                 upper,
-                *args
+                *args,
             )
         ]
         if not pokemons:
@@ -146,29 +152,41 @@ class Pokemon(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(aliases = ("dex",))
+    @commands.command(aliases=("dex",))
     async def pokedex(self, ctx, *, pokemon: converters.DexConverter):
         """View infomation on a pokemon"""
         pokemon, shiny = pokemon
-        embed = constants.Embed(title=f"#{pokemon['species_id']} - {'✨' if shiny else ''}{pokemon['english'].title()}", description = pokemon['sun'])
-        embed.add_field(name="Alternate Names", value=(
-            f"\U0001f1fa\U0001f1f8 {pokemon['english']}\n"
-            f"\U0001f1ef\U0001f1f5 {pokemon['japanese']}\n"
-            f"\U0001f1ef\U0001f1f5 {pokemon['kana']}\n"
-        ), inline=False)
-        embed.add_field(name="Base Stats", value=(
-            f"**HP:** {pokemon['hp']}\n"
-            f"**Attack:** {pokemon['attack']}\n"
-            f"**Defense:** {pokemon['defense']}\n"
-            f"**Sp. Atk:** {pokemon['special_attack']}\n"
-            f"**Sp. Defense:** {pokemon['special_defense']}\n"
-            f"**Speed:** {pokemon['speed']}\n"
-        ))
-        embed.add_field(name="Types", value=(
-            ", ".join(pokemon['types'])
-        ))
-        embed.compact_image(await self.bot.db.get_guild(ctx.guild), url=pokemon['normal'] if not shiny else pokemon['shiny'])
+        embed = constants.Embed(
+            title=f"#{pokemon['species_id']} - {'✨' if shiny else ''}{pokemon['english'].title()}",
+            description=pokemon["sun"],
+        )
+        embed.add_field(
+            name="Alternate Names",
+            value=(
+                f"\U0001f1fa\U0001f1f8 {pokemon['english']}\n"
+                f"\U0001f1ef\U0001f1f5 {pokemon['japanese']}\n"
+                f"\U0001f1ef\U0001f1f5 {pokemon['kana']}\n"
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="Base Stats",
+            value=(
+                f"**HP:** {pokemon['hp']}\n"
+                f"**Attack:** {pokemon['attack']}\n"
+                f"**Defense:** {pokemon['defense']}\n"
+                f"**Sp. Atk:** {pokemon['special_attack']}\n"
+                f"**Sp. Defense:** {pokemon['special_defense']}\n"
+                f"**Speed:** {pokemon['speed']}\n"
+            ),
+        )
+        embed.add_field(name="Types", value=(", ".join(pokemon["types"])))
+        embed.compact_image(
+            await self.bot.db.get_guild(ctx.guild),
+            url=pokemon["normal"] if not shiny else pokemon["shiny"],
+        )
         await ctx.send(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Pokemon(bot))

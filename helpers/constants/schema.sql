@@ -21,12 +21,13 @@ CREATE TABLE users(
 CREATE TABLE guilds(
     id BIGINT PRIMARY KEY,
     prefix TEXT DEFAULT NULL,
-    compact BOOL DEFAULT NULL,
+    compact BOOL DEFAULT FALSE,
     redirects BIGINT[] DEFAULT NULL
 );
 CREATE TABLE channels(
     id BIGINT PRIMARY KEY,
     guild_id BIGINT NOT NULL,
+    spawns_disabled BOOL DEFAULT FALSE,
     disabled BOOL DEFAULT FALSE
 );
 CREATE TABLE dex(

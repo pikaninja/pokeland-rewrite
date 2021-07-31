@@ -27,7 +27,10 @@ class Database(commands.Cog):
         return None
 
     def format_query(self, update, start=2):
-        query = ", ".join((f"{c[3:]} = any(${i}::int[])" if c.startswith("in_") else f"{c} = ${i}") for i, c in enumerate(update, start))
+        query = ", ".join(
+            (f"{c[3:]} = any(${i}::int[])" if c.startswith("in_") else f"{c} = ${i}")
+            for i, c in enumerate(update, start)
+        )
         args = []
         for item in update:
             args.append(update[item])
@@ -40,8 +43,12 @@ class Database(commands.Cog):
         idx = start
         for cs in update:
             for c in update[cs]:
-                builder.append(f"{cs[3:]} = any(${idx}::int[])" if cs.startswith("in_") else f"{cs} = ${idx}")
-                idx+=1
+                builder.append(
+                    f"{cs[3:]} = any(${idx}::int[])"
+                    if cs.startswith("in_")
+                    else f"{cs} = ${idx}"
+                )
+                idx += 1
                 args.append(c)
 
         return (" OR " if _or else " AND ").join(builder), args
@@ -52,11 +59,7 @@ class Database(commands.Cog):
         user = await connection.fetchrow("SELECT * FROM users WHERE id = $1", id)
         if not user:
             return None
-        return models.User(
-            *(
-                user
-            ).values()
-        )
+        return models.User(*(user.values()))
 
     async def get_guild(self, id, *, connection=None):
         connection = connection or self.connection
@@ -64,11 +67,15 @@ class Database(commands.Cog):
         guild = await connection.fetchrow("SELECT * FROM guilds WHERE id = $1", id)
         if not guild:
             return None
-        return models.Guild(
-            *(
-                guild
-            ).values()
-        )   
+        return models.Guild(*(guild.values()))
+
+    async def get_channel(self, id, *, connection=None):
+        connection = connection or self.connection
+        id = self.get_id_from_object(id)
+        channel = await connection.fetchrow("SELECT * FROM channels WHERE id = $1", id)
+        if not channel:
+            return None
+        return models.Channel(*(channel.values()))
 
     async def get_pokemon_by_idx(self, user_id, idx, *, connection=None):
         connection = connection or self.connection

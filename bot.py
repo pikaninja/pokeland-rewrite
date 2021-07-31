@@ -7,21 +7,42 @@ import sys
 import asyncpg
 import re
 
-ignore = ['name', 'levelno', 'pathname', 'filename', 'module', 'exc_info', 'exc_text', 'stack_info', 'lineno', 'funcName', 'created', 'msecs', 'relativeCreated', 'thread', 'threadName', 'processName', 'process']
+ignore = [
+    "name",
+    "levelno",
+    "pathname",
+    "filename",
+    "module",
+    "exc_info",
+    "exc_text",
+    "stack_info",
+    "lineno",
+    "funcName",
+    "created",
+    "msecs",
+    "relativeCreated",
+    "thread",
+    "threadName",
+    "processName",
+    "process",
+]
+
 
 class LoggingFormat(logging.Formatter):
     def format(self, record):
         arguments = {
-            key: value
-            for key, value in record.__dict__.items()
-            if key not in ignore
+            key: value for key, value in record.__dict__.items() if key not in ignore
         }
         return ", ".join(f"{key}={value}" for key, value in arguments.items())
+
 
 async def prefix(bot, message):
     if not message.guild:
         return commands.when_mentioned_or(bot.config.prefix)(bot, message)
-    return commands.when_mentioned_or(await bot.get_cog("Meta").get_prefix(message.channel.guild))(bot, message)
+    return commands.when_mentioned_or(
+        await bot.get_cog("Meta").get_prefix(message.channel.guild)
+    )(bot, message)
+
 
 class Pokeland(store_true.StoreTrueMixin, commands.Bot):
     """The custom subclass for the bot"""
@@ -60,13 +81,13 @@ class Pokeland(store_true.StoreTrueMixin, commands.Bot):
     async def on_command(self, ctx):
         self.logger.info(
             "Command Ran",
-            extra = {
+            extra={
                 "id": ctx.author.id,
                 "tag": str(ctx.author),
                 "guild_id": ctx.guild.id if ctx.guild else None,
                 "guild": str(ctx.guild),
-                "content": ctx.message.content
-            }
+                "content": ctx.message.content,
+            },
         )
 
     def run(self):

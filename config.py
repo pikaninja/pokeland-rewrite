@@ -20,5 +20,5 @@ config = Config(
     config["bot"]["prefix"],
     config["database"]["string"],
     extensions,
-    config["bot"]["error_log_channel_id"]
+    config["bot"]["error_log_channel_id"],
 )

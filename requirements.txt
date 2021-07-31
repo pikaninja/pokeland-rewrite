@@ -1,6 +1,7 @@
-discord.py
+git+https://github.com/Rapptz/discord.py
 asyncpg
 jishaku
+toml
 psutil
 prettytable
 git+https://github.com/bijij/discord-ext-store-true
