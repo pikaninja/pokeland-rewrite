@@ -92,17 +92,29 @@ class Spawning(commands.Cog):
                 if pokemon.level ==  100:
                     return
 
-                xp = random.randint(10, 40)
+                xp = random.randint(10, 40)*10
 
                 pokemon.xp += xp
                
                 if pokemon.xp >= pokemon.xp_needed:
+                    embed = constants.Embed(title = f"Congratulations {message.author.display_name}!")
                     while pokemon.xp >= pokemon.xp_needed:
                         pokemon.xp -= pokemon.xp_needed
                         pokemon.level += 1
                     if not user.hide_levelup:
-                        await message.channel.send(f"Congratulations {message.author.mention}! Your {pokemon.name} is now level {pokemon.level}!")
-                await self.bot.db.update_pokemon_by_idx(message.author, user.selected, dict(xp=pokemon.xp, level=pokemon.level), connection=conn)
+                        embed.description = f"Your {pokemon.name} is now level {pokemon.level}!"
+
+                    data = self.bot.data.get_species_by_id(pokemon.species_id)
+                    if pokemon.level >= data['evolution_level']:
+                        oldname = pokemon.name
+                        pokemon.species_id = data['evolution'] 
+                        embed.add_field(name="Whats this?", value=f"Your {oldname} evolved into {pokemon.name}!")
+
+                    await message.channel.send(embed=embed)
+
+
+
+                await self.bot.db.update_pokemon_by_idx(message.author, user.selected, dict(species_id=pokemon.species_id, xp=pokemon.xp, level=pokemon.level), connection=conn)
                 
                 pokemon.xp_needed
 
