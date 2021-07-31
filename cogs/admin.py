@@ -2,12 +2,13 @@ import io
 import discord
 import textwrap
 import traceback
+
+from contextlib import redirect_stdout
+
 from helpers import misc
 from discord.ext import commands
 from prettytable import PrettyTable
-from contextlib import redirect_stdout
 from jishaku.codeblocks import codeblock_converter
-
 
 class Admin(commands.Cog):
     """Commands for bot administration"""
