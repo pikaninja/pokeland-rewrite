@@ -92,7 +92,7 @@ class Spawning(commands.Cog):
                 if pokemon.level ==  100:
                     return
 
-                xp = random.randint(10, 40)*10
+                xp = random.randint(10, 40)
 
                 pokemon.xp += xp
                
