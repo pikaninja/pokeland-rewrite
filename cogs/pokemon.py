@@ -1,12 +1,18 @@
 import discord
 import typing
+from typing import List
 from discord.ext import commands
+from collections import defaultdict
 from helpers import constants, converters, models, checks, flags
 
 
 class PokemonFilters(flags.PosixFlags):
-    name: str = None
-    level: int = None
+    name: List[str] = None
+    level: List[int] = None
+    legendary: bool = False
+    mythical: bool = False
+    ultra_beast: bool = False
+    _or: bool = commands.flag(name="or", default=False)
 
 
 class Pokemon(commands.Cog):
@@ -31,6 +37,7 @@ class Pokemon(commands.Cog):
 
     @commands.command()
     async def pick(self, ctx, *, pokemon: str):
+        """Select your starter"""
         pokemon = self.bot.data.get_species_by_name(pokemon)
         if not pokemon:
             return await ctx.send("Thats not a valid pokemon!")
@@ -57,12 +64,13 @@ class Pokemon(commands.Cog):
     @commands.command(aliases=("i", "infomation"))
     @checks.has_started()
     async def info(self, ctx, pokemon: converters.PokemonConverter = None):
+        """View infomation on your pokemon"""
         if not pokemon:
             pokemon = await converters.PokemonConverter().convert(ctx, "")
         data = self.bot.data.get_species_by_id(pokemon.species_id)
         embed = constants.Embed(
-            title=f"Level {pokemon.level} {data['name']}",
-            description=f"**XP**: {pokemon.xp}\n**Nature:** {pokemon.nature}",
+            title=f"Level {pokemon.level} {pokemon.name}",
+            description=f"**XP**: {pokemon.xp}/{pokemon.xp_needed}\n**Nature:** {pokemon.nature}",
         )
         embed.add_field(
             name="Stats",
@@ -89,10 +97,29 @@ class Pokemon(commands.Cog):
     async def pokemon(
         self, ctx, page: typing.Optional[int] = 1, *, flags: PokemonFilters = None
     ):
+        """View your pokemon"""
+        filters = defaultdict(list)
+        if flags and flags.name:
+            filters["species_id"].extend([self.bot.data.get_species_by_name(name)["species_id"] for name in flags.name])
+        if flags and flags.level:
+            filters["level"].extend([level for level in flags.level])
+        if flags and flags.legendary:
+            filters["in_species_id"].append(list(self.bot.data.legendary.keys()))
+        if flags and flags.mythical:
+            filters["in_species_id"].append(list(self.bot.data.mythical.keys()))
+        if flags and flags.ultra_beast:
+            filters["in_species_id"].append(list(self.bot.data.ultra_beast.keys()))
+
+        if filters:
+            query, args = self.bot.db.format_query_list(filters, _or = flags._or, start=5)
+            query = f"AND ({query})"
+        else:
+            query = ""
+            args = []
         lower = (page - 1) * 20 + 1
         upper = (page) * 20
         query = (
-            "SELECT * FROM (SELECT *, rank() over(order by ($1)) as rank FROM pokemon) as _ WHERE user_id = $2 AND rank >= $3 AND rank <= $4 ORDER BY rank ASC"
+            f"SELECT * FROM (SELECT *, rank() over(order by ($1)) as rank FROM pokemon) as _ WHERE user_id = $2 AND rank >= $3 AND rank <= $4 {query} ORDER BY rank ASC"
         )
         pokemons = [
             models.Pokemon(pokemon, self.bot.data)
@@ -102,8 +129,11 @@ class Pokemon(commands.Cog):
                 ctx.author.id,
                 lower,
                 upper,
+                *args
             )
         ]
+        if not pokemons:
+            return await ctx.send("No pokémon found.")
         num = max([pokemon.idx for pokemon in pokemons])
         length = len(str(num))
         embed = constants.Embed(title="Your pokemon:", description="")
@@ -118,8 +148,9 @@ class Pokemon(commands.Cog):
 
     @commands.command(aliases = ("dex",))
     async def pokedex(self, ctx, *, pokemon: converters.DexConverter):
+        """View infomation on a pokemon"""
         pokemon, shiny = pokemon
-        embed = constants.Embed(title=f"#{pokemon['species_id']} - {'✨' if shiny else ''}{pokemon['english']}", description = pokemon['sun'])
+        embed = constants.Embed(title=f"#{pokemon['species_id']} - {'✨' if shiny else ''}{pokemon['english'].title()}", description = pokemon['sun'])
         embed.add_field(name="Alternate Names", value=(
             f"\U0001f1fa\U0001f1f8 {pokemon['english']}\n"
             f"\U0001f1ef\U0001f1f5 {pokemon['japanese']}\n"

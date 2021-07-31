@@ -27,21 +27,48 @@ class Database(commands.Cog):
         return None
 
     def format_query(self, update, start=2):
-        query = ", ".join(f"{c} = ${i}" for i, c in enumerate(update, start))
+        query = ", ".join((f"{c[3:]} = any(${i}::int[])" if c.startswith("in_") else f"{c} = ${i}") for i, c in enumerate(update, start))
         args = []
         for item in update:
             args.append(update[item])
 
         return query, args
 
+    def format_query_list(self, update, *, _or=False, start=2):
+        builder = []
+        args = []
+        idx = start
+        for cs in update:
+            for c in update[cs]:
+                builder.append(f"{cs[3:]} = any(${idx}::int[])" if cs.startswith("in_") else f"{cs} = ${idx}")
+                idx+=1
+                args.append(c)
+
+        return (" OR " if _or else " AND ").join(builder), args
+
     async def get_user(self, id, *, connection=None):
         connection = connection or self.connection
         id = self.get_id_from_object(id)
+        user = await connection.fetchrow("SELECT * FROM users WHERE id = $1", id)
+        if not user:
+            return None
         return models.User(
             *(
-                await connection.fetchrow("SELECT * FROM users WHERE id = $1", id)
+                user
             ).values()
         )
+
+    async def get_guild(self, id, *, connection=None):
+        connection = connection or self.connection
+        id = self.get_id_from_object(id)
+        guild = await connection.fetchrow("SELECT * FROM guilds WHERE id = $1", id)
+        if not guild:
+            return None
+        return models.Guild(
+            *(
+                guild
+            ).values()
+        )   
 
     async def get_pokemon_by_idx(self, user_id, idx, *, connection=None):
         connection = connection or self.connection
@@ -56,7 +83,7 @@ class Database(commands.Cog):
         query, args = self.format_query(update, 3)
         await connection.execute(
             f"UPDATE pokemon SET {query} WHERE user_id = $1 AND idx = $2",
-            *([user_id, id] + args),
+            *([user_id, idx] + args),
         )
 
     async def get_next_idx(self, user_id, *, connection=None):

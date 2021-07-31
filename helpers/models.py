@@ -4,6 +4,12 @@ from dataclasses import dataclass
 
 
 @dataclass
+class Guild:
+    id: int
+    prefix: str
+    compact: bool
+
+@dataclass
 class User:
     # general
     id: int
@@ -35,8 +41,14 @@ mapping = {
 
 class Pokemon:
     def __init__(self, record, data=None):
-        self.record = record
+        self.record = dict(record)
         self.data_manager = data
+
+    def __setattr__(self, attr, obj):
+        if hasattr(self, attr):
+            self.record[attr] = obj
+        else:
+            super().__setattr__(attr, obj)
 
     @property
     def idx(self):
@@ -104,6 +116,10 @@ class Pokemon:
     @property
     def spd_iv(self):
         return self.record["spd_iv"]
+
+    @property
+    def xp_needed(self):
+        return 200 + 25*self.level
 
     def stat(self, stat):
         iv = self.record[f"{stat}_iv"]

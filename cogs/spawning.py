@@ -1,8 +1,9 @@
+import time
 import random
 import discord
 from collections import defaultdict
 from discord.ext import commands
-from helpers import constants
+from helpers import constants, models
 
 
 class Spawning(commands.Cog):
@@ -12,9 +13,10 @@ class Spawning(commands.Cog):
         self.bot = bot
 
         def default_spawn():
-            return dict(pokemon=None, count=0, goal=random.randint(25, 50))
+            return dict(pokemon=None, count=0, goal=random.randint(25, 50), timestamp = None)
 
         self.spawns = defaultdict(default_spawn)
+        self.cooldown = {}
 
     def random_pokemon(self):
         pokemon = list(self.bot.data.data.values())
@@ -23,14 +25,15 @@ class Spawning(commands.Cog):
         )[0]
         return pokemon
 
-    async def spawn_pokemon(self, channel):
-        pokemon = self.random_pokemon()
+    async def spawn_pokemon(self, channel, pokemon=None):
+        pokemon = self.bot.data.get_species_by_name(pokemon) if pokemon else self.random_pokemon()
         self.spawns[channel.id]["pokemon"] = pokemon
         self.spawns[channel.id]["count"] = 0
         self.spawns[channel.id]["goal"] = random.randint(25, 50)
+        self.spawns[channel.id]["timestamp"] = time.perf_counter()
         embed = constants.Embed(
             title="A wild pokemon as appeared!",
-            description=f"Guess the pokémon's name and type `{'p!'}catch <pokemon>` to catch it!",
+            description=f"Guess the pokémon's name and type `{await self.bot.get_cog('Meta').get_prefix(channel.guild)}catch <pokemon>` to catch it!",
         )
         embed.set_image(url=pokemon["normal"])
 
@@ -39,6 +42,7 @@ class Spawning(commands.Cog):
     @commands.command(aliases=("capture",))
     @commands.max_concurrency(1, commands.BucketType.channel)
     async def catch(self, ctx, *, pokemon):
+        """Catch a pokemon!"""
         pokemon = self.bot.data.get_species_by_name(pokemon)
         if not pokemon:
             return await ctx.send("That's not a pokémon!")
@@ -52,6 +56,17 @@ class Spawning(commands.Cog):
         ):
             return await ctx.send("That's not the correct pokémon!")
 
+        if time.perf_counter()-self.spawns[ctx.channel.id]["timestamp"]:
+            self.bot.logger.info(
+                "User caught pokemon in under a second", 
+                extra={
+                    "id": ctx.author.id,
+                    "tag": str(ctx.author),
+                    "guild_id": ctx.guild.id,
+                    "guild": ctx.guild,
+                    "content": ctx.message.content
+                }
+            )
         self.spawns[ctx.channel.id]["pokemon"] = None
 
         percentage = 1 / 4096  # in future make changable
@@ -65,11 +80,42 @@ class Spawning(commands.Cog):
             f"Congratulations {ctx.author.mention}! You caught a level {pokemon.level} {'✨' if shiny else ''}{pokemon.name}!"
         )
 
+    async def calculate_xp(self, message):
+        async with self.bot.connection.acquire() as conn:
+            async with conn.transaction():
+                user = await self.bot.db.get_user(message.author, connection=conn)
+                if not user:
+                    return
+                pokemon = models.Pokemon(await self.bot.db.get_pokemon_by_idx(message.author, user.selected, connection=conn), self.bot.data)
+                if pokemon.item == "XP Blocker":
+                    return
+                if pokemon.level ==  100:
+                    return
+
+                xp = random.randint(10, 40)
+
+                pokemon.xp += xp
+               
+                if pokemon.xp >= pokemon.xp_needed:
+                    while pokemon.xp >= pokemon.xp_needed:
+                        pokemon.xp -= pokemon.xp_needed
+                        pokemon.level += 1
+                    if not user.hide_levelup:
+                        await message.channel.send(f"Congratulations {message.author.mention}! Your {pokemon.name} is now level {pokemon.level}!")
+                await self.bot.db.update_pokemon_by_idx(message.author, user.selected, dict(xp=pokemon.xp, level=pokemon.level), connection=conn)
+                
+                pokemon.xp_needed
+
     @commands.Cog.listener("on_message")
     async def spawning(self, message):
         ctx = await self.bot.get_context(message)
         if ctx.valid:
             return
+
+        if cd := self.cooldown.get(message.author.id):
+            if time.perf_counter() - cd <= 0.5:
+                return
+        self.cooldown[message.author.id] = time.perf_counter()
 
         self.spawns[message.channel.id]["count"] += 1
         if (
@@ -77,6 +123,8 @@ class Spawning(commands.Cog):
             >= self.spawns[message.channel.id]["goal"]
         ):
             await self.spawn_pokemon(message.channel)
+
+        await self.calculate_xp(message)
 
 
 def setup(bot):

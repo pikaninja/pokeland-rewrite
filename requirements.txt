@@ -1,4 +1,5 @@
 discord.py
 asyncpg
 jishaku
+psutil
 git+https://github.com/bijij/discord-ext-store-true

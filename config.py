@@ -10,6 +10,7 @@ class Config(NamedTuple):
     prefix: int
     db_string: str
     extensions: List[str]
+    error_log_channel_id: int
 
 
 extensions = [f"cogs.{extension}" for extension in config["bot"]["extensions"]]
@@ -19,4 +20,5 @@ config = Config(
     config["bot"]["prefix"],
     config["database"]["string"],
     extensions,
+    config["bot"]["error_log_channel_id"]
 )

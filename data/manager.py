@@ -15,6 +15,30 @@ class DataManager:
         return mapping
 
     @cached_property
+    def legendary(self):
+        return {
+            species_id: poke
+            for species_id, poke in self.data.items()
+            if poke.get('rarity') == "legendary"
+        }
+
+    @cached_property
+    def mythical(self):
+        return {
+            species_id: poke
+            for species_id, poke in self.data.items()
+            if poke.get('rarity') == "mythical"
+        }
+
+    @cached_property
+    def ultra_beast(self):
+        return {
+            species_id: poke
+            for species_id, poke in self.data.items()
+            if poke.get('rarity') == "ultra_beast"
+        }
+
+    @cached_property
     def name_to_species(self):
         mapping = {}
         for id, poke in self.data.items():
