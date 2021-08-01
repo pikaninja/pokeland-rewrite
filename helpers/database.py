@@ -1,6 +1,7 @@
 import asyncpg
 import random
 from helpers import constants, models
+from collections import defaultdict
 from discord.ext import commands
 
 
@@ -25,6 +26,34 @@ class Database(commands.Cog):
             return object["id"]
 
         return None
+
+    def format_query_from_flags(self, flags):
+        filters = defaultdict(list)
+        if flags and flags.name:
+            filters["species_id"].extend(
+                [
+                    self.bot.data.get_species_by_name(name)["species_id"]
+                    for name in flags.name
+                ]
+            )
+        if flags and flags.level:
+            filters["level"].extend([level for level in flags.level])
+        if flags and flags.legendary:
+            filters["in_species_id"].append(list(self.bot.data.legendary.keys()))
+        if flags and flags.mythical:
+            filters["in_species_id"].append(list(self.bot.data.mythical.keys()))
+        if flags and flags.ultra_beast:
+            filters["in_species_id"].append(list(self.bot.data.ultra_beast.keys()))
+
+        if filters:
+            query, args = self.bot.db.format_query_list(filters, _or=flags._or, start=5)
+            query = f"AND ({query})"
+        else:
+            query = ""
+            args = []
+
+        return query, args
+     
 
     def format_query(self, update, start=2):
         query = ", ".join(
@@ -53,6 +82,18 @@ class Database(commands.Cog):
 
         return (" OR " if _or else " AND ").join(builder), args
 
+    async def get_dex(self, id, *, connection=None):
+        connection = connection or self.connection
+        id = self.get_id_from_object(id)
+        entries = await connection.fetch("SELECT * FROM dex WHERE user_id = $1", id)
+        if not entries:
+            return None
+        return {
+            entry["species_id"]: models.DexEntry(*(entry.values())) 
+            for entry in entries
+        }
+
+    
     async def get_user(self, id, *, connection=None):
         connection = connection or self.connection
         id = self.get_id_from_object(id)

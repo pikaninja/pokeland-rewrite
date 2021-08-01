@@ -3,6 +3,12 @@ from typing import List
 import datetime
 from dataclasses import dataclass
 
+@dataclass
+class DexEntry:
+    user_id: int
+    species_id: int
+    count: int
+    shinies: int
 
 @dataclass
 class Channel:
@@ -59,6 +65,11 @@ class Pokemon:
             self.record[attr] = obj
         else:
             super().__setattr__(attr, obj)
+
+
+    @property
+    def id(self):
+        return self.record["id"]
 
     @property
     def idx(self):

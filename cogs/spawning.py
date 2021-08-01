@@ -5,7 +5,7 @@ import discord
 from collections import defaultdict
 
 from discord.ext import commands
-from helpers import constants, models
+from helpers import constants, models, checks
 
 class Spawning(commands.Cog):
     """The category for spawning pokemon"""
@@ -32,8 +32,8 @@ class Spawning(commands.Cog):
         if not guild:
             guild = await self.bot.db.get_guild(channel.guild, connection=connection)
 
-        if channel := await self.bot.db.get_channel(channel):
-            if channel.spawns_disabled or channel.disabled:
+        if c := await self.bot.db.get_channel(channel):
+            if c.spawns_disabled or c.disabled:
                 self.spawns[channel.id]["count"] = 0
                 return
 
@@ -55,6 +55,7 @@ class Spawning(commands.Cog):
         await channel.send(embed=embed)
 
     @commands.command(aliases=("capture",))
+    @checks.has_started()
     @commands.max_concurrency(1, commands.BucketType.channel)
     async def catch(self, ctx, *, pokemon):
         """Catch a pokemon!"""
@@ -87,13 +88,29 @@ class Spawning(commands.Cog):
         percentage = 1 / 4096  # in future make changable
         shiny = random.random() <= percentage
 
-        pokemon = await self.bot.db.insert_pokemon(
-            ctx.author, pokemon["species_id"], shiny=shiny
-        )
+        async with self.bot.connection.acquire() as connection:
+            async with connection.transaction():
+                poke = await self.bot.db.insert_pokemon(
+                    ctx.author, pokemon["species_id"], shiny=shiny
+                )
 
-        await ctx.send(
-            f"Congratulations {ctx.author.mention}! You caught a level {pokemon.level} {'✨' if shiny else ''}{pokemon.name}!"
-        )
+                count = await connection.fetchval(
+                    "INSERT INTO dex(user_id, species_id, count)" 
+                    "VALUES($1, $2, 1) ON CONFLICT(user_id, species_id)" 
+                    "DO UPDATE SET count = dex.count+1"
+                    "RETURNING count",
+                    ctx.author.id,
+                    pokemon["species_id"]
+                )
+
+                message = f"Congratulations {ctx.author.mention}! You caught a level {poke.level} {'✨' if shiny else ''}{poke.name}!"
+                if count == 1:
+                    message += " Added to pokédex. You've recieved 35 credits!"
+                    await connection.execute("UPDATE users SET bal = bal + 35 WHERE id = $1", ctx.author.id)
+                elif count in (10, 100, 1000):
+                    message += f" You've caught {count} of this pokémon! You've recieved {35*count} credits!"
+                    await connection.execute("UPDATE users SET bal = bal + (35 * $2) WHERE id = $1", ctx.author.id, count)
+        await ctx.send(message)
 
     async def calculate_xp(self, message, *, connection=None):
         connection = connection or self.bot.db.connection

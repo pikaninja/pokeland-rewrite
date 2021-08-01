@@ -5,7 +5,7 @@ from typing import List
 from collections import defaultdict
 
 from discord.ext import commands
-from helpers import constants, converters, models, checks, flags
+from helpers import constants, converters, models, checks, flags, methods
 
 class PokemonFilters(flags.PosixFlags):
     name: List[str] = None
@@ -14,6 +14,10 @@ class PokemonFilters(flags.PosixFlags):
     mythical: bool = False
     ultra_beast: bool = False
     _or: bool = commands.flag(name="or", default=False)
+
+class DexFlags(flags.PosixFlags):
+    caught: bool = False
+    uncaught: bool = False
 
 
 class Pokemon(commands.Cog):
@@ -94,6 +98,8 @@ class Pokemon(commands.Cog):
             url=data["shiny"] if pokemon.shiny else data["normal"],
         )
 
+        embed.set_footer(text=f"Displaying ID: {pokemon.idx}. Global ID: {pokemon.id}")
+
         await ctx.send(embed=embed)
 
     @commands.command(aliases=("p",))
@@ -102,29 +108,8 @@ class Pokemon(commands.Cog):
         self, ctx, page: typing.Optional[int] = 1, *, flags: PokemonFilters = None
     ):
         """View your pokemon"""
-        filters = defaultdict(list)
-        if flags and flags.name:
-            filters["species_id"].extend(
-                [
-                    self.bot.data.get_species_by_name(name)["species_id"]
-                    for name in flags.name
-                ]
-            )
-        if flags and flags.level:
-            filters["level"].extend([level for level in flags.level])
-        if flags and flags.legendary:
-            filters["in_species_id"].append(list(self.bot.data.legendary.keys()))
-        if flags and flags.mythical:
-            filters["in_species_id"].append(list(self.bot.data.mythical.keys()))
-        if flags and flags.ultra_beast:
-            filters["in_species_id"].append(list(self.bot.data.ultra_beast.keys()))
+        query, args = self.bot.db.format_query_from_flags(flags)
 
-        if filters:
-            query, args = self.bot.db.format_query_list(filters, _or=flags._or, start=5)
-            query = f"AND ({query})"
-        else:
-            query = ""
-            args = []
         lower = (page - 1) * 20 + 1
         upper = (page) * 20
         query = f"SELECT * FROM (SELECT *, rank() over(order by ($1)) as rank FROM pokemon) as _ WHERE user_id = $2 AND rank >= $3 AND rank <= $4 {query} ORDER BY rank ASC"
@@ -153,9 +138,8 @@ class Pokemon(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=("dex",))
-    async def pokedex(self, ctx, *, pokemon: converters.DexConverter):
-        """View infomation on a pokemon"""
+
+    async def pokemon_dex(self, ctx, pokemon):
         pokemon, shiny = pokemon
         embed = constants.Embed(
             title=f"#{pokemon['species_id']} - {'✨' if shiny else ''}{pokemon['english'].title()}",
@@ -187,6 +171,59 @@ class Pokemon(commands.Cog):
             url=pokemon["normal"] if not shiny else pokemon["shiny"],
         )
         await ctx.send(embed=embed)
+
+    @commands.command(aliases=("dex", "d"), usage="<pokemon/page>")
+    async def pokedex(self, ctx, *args):
+        """View infomation on a pokemon or view all your dex infomation on pokemon"""
+        try:
+            pokemon = await converters.DexConverter().convert(ctx, " ".join(args))
+        except commands.BadArgument:
+            if len(args) and methods.is_int(args[0]):
+                page = int(args[0])
+                args = args[1:]
+            else:
+                page = 1
+
+            if args:
+                flags = await DexFlags.convert(ctx, " ".join(args))
+            else:
+                flags = None
+
+            dex = await ctx.bot.db.get_dex(ctx.author)
+            entries = self.bot.data.data 
+            if flags:
+                if flags.caught:
+                    entries = {
+                        species_id: data
+                        for species_id, data in entries.items()
+                        if dex.get(species_id)
+                    }
+                elif flags.uncaught:
+                    entries = {
+                        species_id: data
+                        for species_id, data in entries.items()
+                        if not dex.get(species_id)
+                    }
+
+            ids = list(range((page-1)*20, page*20))
+
+            embed = constants.Embed(title="Pokédex", description=f"You've caught {len(dex)} of {len(self.bot.data.data)} pokémon.")
+
+            for idx, species_id in enumerate(sorted(entries.keys())):
+                data = entries[species_id]
+                if idx not in ids:
+                    continue
+                if entry := dex.get(species_id):
+                    message = f"{entry.count} caught!" " \N{WHITE HEAVY CHECK MARK}"
+                else:
+                    message = "Not caught yet! \N{CROSS MARK}"
+                embed.add_field(name=f"{data['english']} #{species_id}", value=message)
+
+            await ctx.send(embed=embed)
+
+        else:
+            return await self.pokemon_dex(ctx, pokemon)
+
 
 
 def setup(bot):

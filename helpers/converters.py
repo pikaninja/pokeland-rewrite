@@ -1,3 +1,4 @@
+from .methods import is_int
 from discord.ext import commands
 from helpers.models import Pokemon
 
@@ -10,6 +11,8 @@ class PokemonConverter(commands.Converter):
             )
         elif argument.lower() in ("l", "latest"):
             argument = 0
+        elif not is_int(argument):
+            raise commands.BadArgument("Please specify an id or latest")
         else:
             argument = int(argument)
         async with ctx.bot.connection.acquire() as conn:
@@ -34,12 +37,11 @@ class DexConverter(commands.Converter):
         if argument.startswith("shiny"):
             shiny = True
             argument = argument.replace("shiny ", "")
-            print(argument)
-        if argument.isdigit():
-            if pokemon := ctx.bot.data.get_species_by_id(int(argument)):
+        if argument.startswith("#") and is_int(argument[1:]):
+            if pokemon := ctx.bot.data.get_species_by_id(int(argument[1:])):
                 return pokemon, shiny
 
         elif pokemon := ctx.bot.data.get_species_by_name(argument):
             return pokemon, shiny
 
-        return None
+        raise commands.BadArgument(f"No dex entry found for {argument}")

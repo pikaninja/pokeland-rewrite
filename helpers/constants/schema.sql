@@ -31,10 +31,11 @@ CREATE TABLE channels(
     disabled BOOL DEFAULT FALSE
 );
 CREATE TABLE dex(
-    user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
-    species_id INT NOT NULL,
+    user_id BIGINT REFERENCES users(id),
+    species_id INT,
     count INT NOT NULL,
-    shinies INT NOT NULL
+    shinies INT DEFAULT 0,
+    PRIMARY KEY(user_id, species_id)
 );
 CREATE TABLE pokemon(
     --general stuffs
