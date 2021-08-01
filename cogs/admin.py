@@ -68,7 +68,7 @@ class Admin(commands.Cog):
 
         code = textwrap.indent(code, "    ")
 
-        code = f"async def func():{code}"
+        code = f"async def func():\n{code}"
 
         env = {
             "discord": discord,
