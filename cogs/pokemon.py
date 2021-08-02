@@ -117,12 +117,11 @@ class Pokemon(commands.Cog):
 
         lower = (page - 1) * 20 + 1
         upper = (page) * 20
-        query = f"SELECT * FROM (SELECT *, rank() over(order by ($1)) as rank FROM pokemon) as _ WHERE user_id = $2 AND rank >= $3 AND rank <= $4 {query} ORDER BY rank ASC"
+        query = f"SELECT * FROM (SELECT *, rank() over(order by ({(await self.bot.db.get_user(ctx.author)).order_by})) as rank FROM pokemon) as _ WHERE user_id = $1 AND rank >= $2 AND rank <= $3 {query} ORDER BY rank ASC"
         pokemons = [
             models.Pokemon(pokemon, self.bot.data)
             for pokemon in await self.bot.connection.fetch(
                 query,
-                (await self.bot.db.get_user(ctx.author)).order_by,
                 ctx.author.id,
                 lower,
                 upper,
@@ -183,6 +182,7 @@ class Pokemon(commands.Cog):
         try:
             pokemon = await converters.DexConverter().convert(ctx, " ".join(args))
         except commands.BadArgument:
+            await checks.has_started().predicate(ctx)
             if len(args) and methods.is_int(args[0]):
                 page = int(args[0])
                 args = args[1:]

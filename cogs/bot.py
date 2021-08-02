@@ -19,14 +19,6 @@ class Bot(commands.Cog):
         return True
 
     @commands.Cog.listener()
-    async def on_interaction(self, interaction: discord.Interaction):
-        """Bad idea test"""
-        if interaction.type != discord.InteractionType.application_command:
-            return
-
-        interaction.data = cast(ApplicationCommandInteractionData, interaction.data)
-
-    @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
             return

@@ -30,14 +30,11 @@ class Database(commands.Cog):
     def format_query_from_flags(self, flags):
         filters = defaultdict(list)
         if flags and flags.name:
-            filters["species_id"].extend(
-                [
-                    self.bot.data.get_species_by_name(name)["species_id"]
-                    for name in flags.name
-                ]
+            filters["species_id"].append(
+                    self.bot.data.get_species_by_name(flags.name)["species_id"]
             )
         if flags and flags.level:
-            filters["level"].extend([level for level in flags.level])
+            filters["level"].append(flags.level)
         if flags and flags.legendary:
             filters["in_species_id"].append(list(self.bot.data.legendary.keys()))
         if flags and flags.mythical:
@@ -46,7 +43,7 @@ class Database(commands.Cog):
             filters["in_species_id"].append(list(self.bot.data.ultra_beast.keys()))
 
         if filters:
-            query, args = self.bot.db.format_query_list(filters, _or=flags._or, start=5)
+            query, args = self.bot.db.format_query_list(filters, _or=flags._or, start=4)
             query = f"AND ({query})"
         else:
             query = ""
@@ -87,7 +84,7 @@ class Database(commands.Cog):
         id = self.get_id_from_object(id)
         entries = await connection.fetch("SELECT * FROM dex WHERE user_id = $1", id)
         if not entries:
-            return None
+            return {}
         return {
             entry["species_id"]: models.DexEntry(*(entry.values())) 
             for entry in entries

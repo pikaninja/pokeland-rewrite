@@ -1,5 +1,6 @@
 import discord
 import copy
+import aiohttp
 from discord.ext import commands, store_true
 from data.manager import DataManager
 import logging
@@ -71,6 +72,7 @@ class Pokeland(store_true.StoreTrueMixin, commands.Bot):
         return await super().get_context(message, cls=cls)
 
     async def setup(self):
+        self.session = aiohttp.ClientSession()
         self.connection = await asyncpg.create_pool(self.config.db_string)
         for extension in self.config.extensions:
             self.load_extension(extension)
@@ -92,3 +94,7 @@ class Pokeland(store_true.StoreTrueMixin, commands.Bot):
 
     def run(self):
         super().run(self.config.token)
+
+    async def close(self):
+        await self.session.close()
+        await super().close()
