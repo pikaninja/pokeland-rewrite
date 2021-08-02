@@ -22,15 +22,18 @@ class Admin(commands.Cog):
             await ctx.send_help(ctx.command)
 
     @dev.command()
+    @commands.is_owner()
     async def random_spawn(self, ctx):
         """Spawn a random pokemon"""
         await ctx.bot.get_cog("Spawning").spawn_pokemon(ctx.channel)
 
     @dev.command()
+    @commands.is_owner()
     async def spawn(self, ctx, *, pokemon):
         await ctx.bot.get_cog("Spawning").spawn_pokemon(ctx.channel, pokemon)
 
     @dev.command()
+    @commands.is_owner()
     async def give_pokemon(self, ctx, target: discord.Member, *, pokemon):
         """Add pokemon to a user"""
         shiny = False
@@ -45,6 +48,7 @@ class Admin(commands.Cog):
         await ctx.message.add_reaction("\U00002705")
 
     @dev.command()
+    @commands.is_owner()
     async def sql(self, ctx, *, code):
         """Run an sql query"""
         query = codeblock_converter(code).content
@@ -63,6 +67,7 @@ class Admin(commands.Cog):
         )
 
     @dev.command(name="eval")
+    @commands.is_owner()
     async def _eval(self, ctx, *, code):
         """Evaluate code"""
         code = codeblock_converter(code).content

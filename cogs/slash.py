@@ -23,7 +23,9 @@ class SlashContext:
     channel: Union[discord.TextChannel, discord.DMChannel]
     guild: discord.Guild
     message: FalseMessage
+    command: commands.Command
     interaction: discord.Interaction
+    prefix: str = "/"
 
     async def send(self, *args, **kwargs):
         if self.interaction.response.is_done():
@@ -169,6 +171,7 @@ class Slash(commands.Cog):
             interaction.channel,
             interaction.guild,
             message,
+            command,
             interaction,
         )
         params = []
@@ -194,9 +197,13 @@ class Slash(commands.Cog):
 
         self.bot.loop.create_task(fallback())
         try:
-            await command(ctx, *params, **kwargs)
+            if await command.can_run(ctx):
+                print("hi")
+                await command(ctx, *params, **kwargs)
+            else:
+                raise commands.CheckFailure()
         except Exception as error:
-            self.bot.dispatch("command_error".ctx, error)
+            self.bot.dispatch("command_error", ctx, error)
 
 
 def setup(bot):
