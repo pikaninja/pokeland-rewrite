@@ -10,6 +10,7 @@ from discord.ext import commands
 from prettytable import PrettyTable
 from jishaku.codeblocks import codeblock_converter
 
+
 class Admin(commands.Cog):
     """Commands for bot administration"""
 

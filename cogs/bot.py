@@ -7,6 +7,7 @@ from discord.ext import commands
 
 class Bot(commands.Cog):
     """Various bot features"""
+
     def __init__(self, bot):
         self.bot = bot
         self.cd = commands.CooldownMapping.from_cooldown(5, 3, commands.BucketType.user)
@@ -14,7 +15,9 @@ class Bot(commands.Cog):
     async def bot_check_once(self, ctx):
         bucket = self.cd.get_bucket(ctx.message)
         if retry_after := bucket.update_rate_limit():
-            raise commands.CommandOnCooldown(bucket, retry_after, commands.BucketType.user)
+            raise commands.CommandOnCooldown(
+                bucket, retry_after, commands.BucketType.user
+            )
 
         return True
 

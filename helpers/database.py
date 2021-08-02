@@ -31,7 +31,7 @@ class Database(commands.Cog):
         filters = defaultdict(list)
         if flags and flags.name:
             filters["species_id"].append(
-                    self.bot.data.get_species_by_name(flags.name)["species_id"]
+                self.bot.data.get_species_by_name(flags.name)["species_id"]
             )
         if flags and flags.level:
             filters["level"].append(flags.level)
@@ -50,7 +50,6 @@ class Database(commands.Cog):
             args = []
 
         return query, args
-     
 
     def format_query(self, update, start=2):
         query = ", ".join(
@@ -86,11 +85,9 @@ class Database(commands.Cog):
         if not entries:
             return {}
         return {
-            entry["species_id"]: models.DexEntry(*(entry.values())) 
-            for entry in entries
+            entry["species_id"]: models.DexEntry(*(entry.values())) for entry in entries
         }
 
-    
     async def get_user(self, id, *, connection=None):
         connection = connection or self.connection
         id = self.get_id_from_object(id)

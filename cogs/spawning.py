@@ -7,6 +7,7 @@ from collections import defaultdict
 from discord.ext import commands
 from helpers import constants, models, checks
 
+
 class Spawning(commands.Cog):
     """The category for spawning pokemon"""
 
@@ -28,7 +29,9 @@ class Spawning(commands.Cog):
         )[0]
         return pokemon
 
-    async def spawn_pokemon(self, channel, pokemon=None, *, guild=None, connection = None):
+    async def spawn_pokemon(
+        self, channel, pokemon=None, *, guild=None, connection=None
+    ):
         if not guild:
             guild = await self.bot.db.get_guild(channel.guild, connection=connection)
 
@@ -95,21 +98,27 @@ class Spawning(commands.Cog):
                 )
 
                 count = await connection.fetchval(
-                    "INSERT INTO dex(user_id, species_id, count)" 
-                    "VALUES($1, $2, 1) ON CONFLICT(user_id, species_id)" 
+                    "INSERT INTO dex(user_id, species_id, count)"
+                    "VALUES($1, $2, 1) ON CONFLICT(user_id, species_id)"
                     "DO UPDATE SET count = dex.count+1"
                     "RETURNING count",
                     ctx.author.id,
-                    pokemon["species_id"]
+                    pokemon["species_id"],
                 )
 
                 message = f"Congratulations {ctx.author.mention}! You caught a level {poke.level} {'✨' if shiny else ''}{poke.name}!"
                 if count == 1:
                     message += " Added to pokédex. You've recieved 35 credits!"
-                    await connection.execute("UPDATE users SET bal = bal + 35 WHERE id = $1", ctx.author.id)
+                    await connection.execute(
+                        "UPDATE users SET bal = bal + 35 WHERE id = $1", ctx.author.id
+                    )
                 elif count in (10, 100, 1000):
                     message += f" You've caught {count} of this pokémon! You've recieved {35*count} credits!"
-                    await connection.execute("UPDATE users SET bal = bal + (35 * $2) WHERE id = $1", ctx.author.id, count)
+                    await connection.execute(
+                        "UPDATE users SET bal = bal + (35 * $2) WHERE id = $1",
+                        ctx.author.id,
+                        count,
+                    )
         await ctx.send(message)
 
     async def calculate_xp(self, message, *, connection=None):
@@ -139,9 +148,7 @@ class Spawning(commands.Cog):
             while pokemon.xp >= pokemon.xp_needed:
                 pokemon.xp -= pokemon.xp_needed
                 pokemon.level += 1
-            embed.description = (
-                f"Your {pokemon.name} is now level {pokemon.level}!"
-            )
+            embed.description = f"Your {pokemon.name} is now level {pokemon.level}!"
 
             data = self.bot.data.get_species_by_id(pokemon.species_id)
             if pokemon.level >= data["evolution_level"]:
@@ -184,12 +191,18 @@ class Spawning(commands.Cog):
                     self.spawns[message.channel.id]["count"]
                     >= self.spawns[message.channel.id]["goal"]
                 ):
-                    guild = await self.bot.db.get_guild(message.guild, connection=connection)
+                    guild = await self.bot.db.get_guild(
+                        message.guild, connection=connection
+                    )
                     if not guild or not guild.redirects:
                         channel = message.channel
                     else:
-                        channel = message.guild.get_channel(random.choice(guild.redirects))
-                    await self.spawn_pokemon(channel, guild=guild, connection=connection)
+                        channel = message.guild.get_channel(
+                            random.choice(guild.redirects)
+                        )
+                    await self.spawn_pokemon(
+                        channel, guild=guild, connection=connection
+                    )
 
         await self.calculate_xp(message)
 

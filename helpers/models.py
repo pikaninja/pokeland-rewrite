@@ -3,6 +3,7 @@ from typing import List
 import datetime
 from dataclasses import dataclass
 
+
 @dataclass
 class DexEntry:
     user_id: int
@@ -10,12 +11,14 @@ class DexEntry:
     count: int
     shinies: int
 
+
 @dataclass
 class Channel:
     id: int
     guild_id: int
     spawns_disabled: bool
     disabled: bool
+
 
 @dataclass
 class Guild:
@@ -65,7 +68,6 @@ class Pokemon:
             self.record[attr] = obj
         else:
             super().__setattr__(attr, obj)
-
 
     @property
     def id(self):

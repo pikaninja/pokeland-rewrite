@@ -7,6 +7,7 @@ from typing import Literal, Union
 from discord.ext import commands
 from helpers import constants, misc, checks
 
+
 class Meta(commands.Cog):
     """Commands for bot configuration"""
 
@@ -18,7 +19,9 @@ class Meta(commands.Cog):
         if not channel:
             return True
         if channel.disabled and ctx.command != self.enable:
-            raise commands.CheckFailure("Commands in this channel are currently disabled!")
+            raise commands.CheckFailure(
+                "Commands in this channel are currently disabled!"
+            )
         return True
 
     async def get_prefix(self, guild):
@@ -28,22 +31,39 @@ class Meta(commands.Cog):
         return guild.prefix or self.bot.config.prefix
 
     @commands.command(usage="<commands/spawns>")
-    async def disable(self, ctx, feature: Literal['command', 'spawns', 'commands', 'spawn']):
+    async def disable(
+        self, ctx, feature: Literal["command", "spawns", "commands", "spawn"]
+    ):
         """Disable specific features in the channel for the bot, note that if you disable commands, spawns will be disabled too"""
         if feature in ("command", "commands"):
-            await self.bot.connection.execute("INSERT INTO channels(id, guild_id, disabled) VALUES($1, $2, true) ON CONFLICT(id) DO UPDATE SET disabled=true", ctx.channel.id, ctx.guild.id)
+            await self.bot.connection.execute(
+                "INSERT INTO channels(id, guild_id, disabled) VALUES($1, $2, true) ON CONFLICT(id) DO UPDATE SET disabled=true",
+                ctx.channel.id,
+                ctx.guild.id,
+            )
         else:
-            await self.bot.connection.execute("INSERT INTO channels(id, guild_id, spawns_disabled) VALUES($1, $2, true) ON CONFLICT(id) DO UPDATE SET spawns_disabled=true", ctx.channel.id, ctx.guild.id)
+            await self.bot.connection.execute(
+                "INSERT INTO channels(id, guild_id, spawns_disabled) VALUES($1, $2, true) ON CONFLICT(id) DO UPDATE SET spawns_disabled=true",
+                ctx.channel.id,
+                ctx.guild.id,
+            )
 
         await ctx.send(f"I have disabled `{feature}`")
-    
+
     @commands.command(usage="<commands/spawns>")
-    async def enable(self, ctx, feature: Literal['command', 'spawns', 'commands', 'spawn']):
+    async def enable(
+        self, ctx, feature: Literal["command", "spawns", "commands", "spawn"]
+    ):
         """Enable disabled features in the channel"""
         if feature in ("command", "commands"):
-            await self.bot.connection.execute("UPDATE channels SET disabled = false WHERE id = $1", ctx.channel.id)
+            await self.bot.connection.execute(
+                "UPDATE channels SET disabled = false WHERE id = $1", ctx.channel.id
+            )
         else:
-            await self.bot.connection.execute("UPDATE channels SET spawns_disabled = false WHERE id = $1", ctx.channel.id)
+            await self.bot.connection.execute(
+                "UPDATE channels SET spawns_disabled = false WHERE id = $1",
+                ctx.channel.id,
+            )
 
         await ctx.send(f"I have enabled `{feature}`")
 
@@ -158,6 +178,7 @@ class Meta(commands.Cog):
 
         else:
             await message.edit(content=f"Pong! **{delay} ms**")
+
 
 def setup(bot):
     bot.add_cog(Meta(bot))

@@ -8,6 +8,7 @@ from collections import defaultdict
 from discord.ext import commands
 from helpers import constants, converters, models, checks, flags, methods
 
+
 class PokemonFilters(flags.PosixFlags):
     name: List[str] = None
     level: List[int] = None
@@ -16,13 +17,14 @@ class PokemonFilters(flags.PosixFlags):
     ultra_beast: bool = False
     _or: bool = commands.flag(name="or", default=False)
 
+
 class DexFlags(flags.PosixFlags):
     legendary: bool = False
     ub: bool = commands.flag(aliases=("ultrabeast", "ultra_beast"), default=False)
     mythical: bool = False
     caught: bool = False
     uncaught: bool = False
-    order: Literal['a', 'd'] = None
+    order: Literal["a", "d"] = None
 
 
 class Pokemon(commands.Cog):
@@ -142,7 +144,6 @@ class Pokemon(commands.Cog):
 
         await ctx.send(embed=embed)
 
-
     async def pokemon_dex(self, ctx, pokemon):
         pokemon, shiny = pokemon
         embed = constants.Embed(
@@ -200,7 +201,7 @@ class Pokemon(commands.Cog):
                 flags = None
 
             dex = await ctx.bot.db.get_dex(ctx.author)
-            entries = self.bot.data.data 
+            entries = self.bot.data.data
             key = None
             reverse = False
             if flags:
@@ -218,10 +219,12 @@ class Pokemon(commands.Cog):
                     }
 
                 if flags.order:
+
                     def key(item):
                         if entry := dex.get(item):
                             return 60000 + entry.count
                         return item
+
                     if flags.order == "d":
                         reverse = True
 
@@ -232,13 +235,17 @@ class Pokemon(commands.Cog):
                 elif flags.ub:
                     entries = self.bot.data.ultra_beast
 
-
             dex = {i: v for i, v in dex.items() if i in entries}
-            ids = list(range((page-1)*20, page*20))
+            ids = list(range((page - 1) * 20, page * 20))
 
-            embed = constants.Embed(title="Pokédex", description=f"You've caught {len(dex)} of {len(entries)} pokémon.")
+            embed = constants.Embed(
+                title="Pokédex",
+                description=f"You've caught {len(dex)} of {len(entries)} pokémon.",
+            )
 
-            for idx, species_id in enumerate(sorted(entries.keys(), key=key, reverse=reverse)):
+            for idx, species_id in enumerate(
+                sorted(entries.keys(), key=key, reverse=reverse)
+            ):
                 data = entries[species_id]
                 if idx not in ids:
                     continue
@@ -252,7 +259,6 @@ class Pokemon(commands.Cog):
 
         else:
             return await self.pokemon_dex(ctx, pokemon)
-
 
 
 def setup(bot):
