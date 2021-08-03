@@ -173,7 +173,7 @@ class Slash(commands.Cog):
             return FakeUser(data["username"], data["discriminator"], int(data["id"]))
         if param.annotation == inspect.Parameter.empty:
             return option["value"]
-        return commands.run_converters(ctx, param.annotation, option["value"], 0)
+        return await commands.run_converters(ctx, param.annotation, option["value"], 0)
 
     async def convert_param(self, ctx, option, param, options):
         if param.annotation != inspect.Parameter.empty:
