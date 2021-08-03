@@ -25,6 +25,7 @@ class SlashContext:
     message: FalseMessage
     command: commands.Command
     interaction: discord.Interaction
+    current_parameter: int = 0
     prefix: str = "/"
 
     async def send(self, *args, **kwargs):
@@ -94,8 +95,27 @@ class Slash(commands.Cog):
                 type = param.annotation
                 required = param.default == inspect.Parameter.empty
 
-            if isinstance(param.annotation, commands.FlagConverter):
-                for flag in param.annotation.get_flags()
+            if self.is_flag(param.annotation):
+                for name, flag in param.annotation.get_flags().items():
+                    if flag.default != ...:
+                        required = False
+                    else:
+                        required = True
+                    type = flag.annotation
+                    if type in self.DISCORD_TYPES:
+                        type = self.TYPES[type]
+                    else:
+                        type = self.TYPES[str]
+                    options.append(
+                        {
+                            "name": name,
+                            "description": name,
+                            "type": type,
+                            "required": required
+                        }
+                    )
+                continue
+                
 
             if type in self.DISCORD_TYPES:
                 options.append(
@@ -137,11 +157,20 @@ class Slash(commands.Cog):
         async with self.bot.session.put(url, headers=headers, json=cmds) as resp:
             resp.raise_for_status()
 
-    async def convert_param(self, ctx, option, param):
-        value = option["value"]
+    async def convert_param(self, ctx, option, param, options):
         if param.annotation != inspect.Parameter.empty:
-            value = await commands.run_converters(ctx, param.annotation, value, 0)
-        return value
+            if self.is_flag(param.annotation):
+                flag = Flags()
+                for name, option in options.items():
+                    if name not in ctx.command.clean_params.keys():
+                        type = param.annotation.get_flags()[name].annotation
+                        setattr(flag, name, await commands.run_converters(ctx, type, option["value"], 0))
+                return flag
+            value = await commands.run_converters(ctx, param.annotation, option["value"], 0)
+        return option["value"]
+
+    def is_flag(self, annotation):
+        return (inspect.isclass(annotation) and issubclass(annotation, commands.FlagConverter)) or isinstance(annotation, commands.FlagConverter)
 
     @commands.Cog.listener()
     async def on_interaction(self, interaction: discord.Interaction):
@@ -181,10 +210,10 @@ class Slash(commands.Cog):
         kwargs = {}
         for name, param in command.clean_params.items():
             option = options.get(name)
-            if not option:
+            if (not option) and not self.is_flag(param.annotation):
                 option = param.default
             else:
-                option = await self.convert_param(ctx, option, param)
+                option = await self.convert_param(ctx, option, param, options)
             if param.kind == inspect.Parameter.KEYWORD_ONLY:
                 kwargs[name] = option
             else:
@@ -201,7 +230,6 @@ class Slash(commands.Cog):
         self.bot.loop.create_task(fallback())
         try:
             if await command.can_run(ctx):
-                print("hi")
                 await command(ctx, *params, **kwargs)
             else:
                 raise commands.CheckFailure()

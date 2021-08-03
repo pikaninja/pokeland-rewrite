@@ -10,12 +10,11 @@ from helpers import constants, converters, models, checks, flags, methods
 
 
 class PokemonFilters(flags.PosixFlags):
-    name: List[str] = None
-    level: List[int] = None
+    name: str = None
+    level: int = None
     legendary: bool = False
     mythical: bool = False
-    ultra_beast: bool = False
-    _or: bool = commands.flag(name="or", default=False)
+    ultrabeast: bool = False
 
 
 class DexFlags(flags.PosixFlags):

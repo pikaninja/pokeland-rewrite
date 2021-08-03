@@ -43,7 +43,7 @@ class Database(commands.Cog):
             filters["in_species_id"].append(list(self.bot.data.ultra_beast.keys()))
 
         if filters:
-            query, args = self.bot.db.format_query_list(filters, _or=flags._or, start=4)
+            query, args = self.bot.db.format_query_list(filters, _or=False, start=4)
             query = f"AND ({query})"
         else:
             query = ""
