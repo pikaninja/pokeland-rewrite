@@ -1,44 +1,47 @@
 [
     {
-        "name": "compact",
-        "description": "Controls whether or not to send messages on levelup",
+        "name": "prefix",
+        "description": "The group command for prefix management, use with no subcommand to view current prefix",
         "options": [
             {
-                "name": "option",
-                "description": "option",
+                "name": "reset",
+                "description": "Reset the prefix to the default prefix",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "prefix",
+                        "description": "prefix",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "set",
+                "description": "Set the prefix for the guild to somethign else",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "prefix",
+                        "description": "prefix",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "enable",
+        "description": "Enable disabled features in the channel",
+        "options": [
+            {
+                "name": "feature",
+                "description": "feature",
                 "type": 3,
                 "required": true
             }
         ]
-    },
-    {
-        "name": "help",
-        "description": "Shows this message",
-        "options": [
-            {
-                "name": "command",
-                "description": "command",
-                "type": 3,
-                "required": false
-            }
-        ]
-    },
-    {
-        "name": "hide_levelup",
-        "description": "Toggles whether or not to send messages on levelup",
-        "options": [
-            {
-                "name": "option",
-                "description": "option",
-                "type": 3,
-                "required": true
-            }
-        ]
-    },
-    {
-        "name": "start",
-        "description": "Begin your journey into the world of pokemon!",
-        "options": []
     },
     {
         "name": "pokemon",
@@ -83,60 +86,9 @@
         ]
     },
     {
-        "name": "enable",
-        "description": "Enable disabled features in the channel",
-        "options": [
-            {
-                "name": "feature",
-                "description": "feature",
-                "type": 3,
-                "required": true
-            }
-        ]
-    },
-    {
-        "name": "prefix",
-        "description": "The group command for prefix management, use with no subcommand to view current prefix",
-        "options": [
-            {
-                "name": "set",
-                "description": "Set the prefix for the guild to somethign else",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "prefix",
-                        "description": "prefix",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "reset",
-                "description": "Reset the prefix to the default prefix",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "prefix",
-                        "description": "prefix",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "name": "pick",
-        "description": "Select your starter",
-        "options": [
-            {
-                "name": "pokemon",
-                "description": "pokemon",
-                "type": 3,
-                "required": true
-            }
-        ]
+        "name": "ping",
+        "description": "Pong!",
+        "options": []
     },
     {
         "name": "catch",
@@ -154,32 +106,6 @@
         "name": "dev",
         "description": "The group command for development commands",
         "options": [
-            {
-                "name": "sql",
-                "description": "Run an sql query",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "code",
-                        "description": "code",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "spawn",
-                "description": "no decription",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "pokemon",
-                        "description": "pokemon",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
             {
                 "name": "eval",
                 "description": "Evaluate code",
@@ -217,6 +143,97 @@
                         "required": true
                     }
                 ]
+            },
+            {
+                "name": "spawn",
+                "description": "no decription",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "pokemon",
+                        "description": "pokemon",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "sql",
+                "description": "Run an sql query",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "code",
+                        "description": "code",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "hide_levelup",
+        "description": "Toggles whether or not to send messages on levelup",
+        "options": [
+            {
+                "name": "option",
+                "description": "option",
+                "type": 3,
+                "required": true
+            }
+        ]
+    },
+    {
+        "name": "help",
+        "description": "Shows this message",
+        "options": [
+            {
+                "name": "command",
+                "description": "command",
+                "type": 3,
+                "required": false
+            }
+        ]
+    },
+    {
+        "name": "start",
+        "description": "Begin your journey into the world of pokemon!",
+        "options": []
+    },
+    {
+        "name": "test",
+        "description": "no description",
+        "options": [
+            {
+                "name": "target",
+                "description": "target",
+                "type": 6,
+                "required": true
+            }
+        ]
+    },
+    {
+        "name": "redirect",
+        "description": "Config the redirect settings for the server, when set, all spawns will be redirected to these cha...",
+        "options": [
+            {
+                "name": "channels",
+                "description": "channels",
+                "type": 3,
+                "required": true
+            }
+        ]
+    },
+    {
+        "name": "pick",
+        "description": "Select your starter",
+        "options": [
+            {
+                "name": "pokemon",
+                "description": "pokemon",
+                "type": 3,
+                "required": true
             }
         ]
     },
@@ -245,21 +262,16 @@
         ]
     },
     {
-        "name": "redirect",
-        "description": "Config the redirect settings for the server, when set, all spawns will be redirected to these cha...",
+        "name": "compact",
+        "description": "Controls whether or not to send messages on levelup",
         "options": [
             {
-                "name": "channels",
-                "description": "channels",
+                "name": "option",
+                "description": "option",
                 "type": 3,
                 "required": true
             }
         ]
-    },
-    {
-        "name": "ping",
-        "description": "Pong!",
-        "options": []
     },
     {
         "name": "pokedex",

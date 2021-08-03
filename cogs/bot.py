@@ -12,6 +12,10 @@ class Bot(commands.Cog):
         self.bot = bot
         self.cd = commands.CooldownMapping.from_cooldown(5, 3, commands.BucketType.user)
 
+    @commands.command()
+    async def test(self, ctx, target: discord.Member):
+        await ctx.send(target.mention)
+
     async def bot_check_once(self, ctx):
         bucket = self.cd.get_bucket(ctx.message)
         if retry_after := bucket.update_rate_limit():

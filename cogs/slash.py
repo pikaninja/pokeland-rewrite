@@ -9,6 +9,16 @@ import datetime
 import discord
 from discord.ext import commands
 
+@dataclass
+class FakeUser:
+    name: str
+    discrim: str
+    id: str
+    def __str__(self):
+        return f"{self.name}#{self.discrim}"
+    @property
+    def mention(self):
+        return f"<@{self.id}>"
 
 @dataclass
 class FalseMessage:
@@ -152,10 +162,18 @@ class Slash(commands.Cog):
         ]
         with open("test.json", "w") as f:
             json.dump(cmds, f, indent=4)
-        url = f"{discord.http.Route.BASE}/applications/{self.bot.user.id}/guilds/716596551887093873/commands"
+        url = f"{discord.http.Route.BASE}/applications/{self.bot.user.id}/commands"
         headers = {"Authorization": f"Bot {self.bot.http.token}"}
         async with self.bot.session.put(url, headers=headers, json=cmds) as resp:
             resp.raise_for_status()
+
+    async def real_convert(self, ctx, option, param):
+        if option["type"] == 6:
+            data = ctx.interaction.data["resolved"]["users"][option["value"]]
+            return FakeUser(data["username"], data["discriminator"], int(data["id"]))
+        if param.annotation == inspect.Parameter.empty:
+            return option["value"]
+        return commands.run_converters(ctx, param.annotation, option["value"], 0)
 
     async def convert_param(self, ctx, option, param, options):
         if param.annotation != inspect.Parameter.empty:
@@ -164,9 +182,10 @@ class Slash(commands.Cog):
                 for name, option in options.items():
                     if name not in ctx.command.clean_params.keys():
                         type = param.annotation.get_flags()[name].annotation
-                        setattr(flag, name, await commands.run_converters(ctx, type, option["value"], 0))
+                        setattr(flag, name, await self.real_convert(ctx, option, param))
                 return flag
-            value = await commands.run_converters(ctx, param.annotation, option["value"], 0)
+            value = await self.real_convert(ctx, option, param)
+            return value
         return option["value"]
 
     def is_flag(self, annotation):
