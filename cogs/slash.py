@@ -94,6 +94,9 @@ class Slash(commands.Cog):
                 type = param.annotation
                 required = param.default == inspect.Parameter.empty
 
+            if isinstance(param.annotation, commands.FlagConverter):
+                for flag in param.annotation.get_flags()
+
             if type in self.DISCORD_TYPES:
                 options.append(
                     {
