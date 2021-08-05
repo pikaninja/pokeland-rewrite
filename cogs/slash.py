@@ -3,6 +3,7 @@ import typing
 import json
 import inspect
 from dataclasses import dataclass
+from helpers import methods
 from typing import Union, Optional
 import datetime
 
@@ -40,9 +41,10 @@ class SlashContext:
 
     async def send(self, *args, **kwargs):
         if self.interaction.response.is_done():
-            await self.interaction.followup.send(*args, **kwargs)
+            return await self.interaction.followup.send(*args, **kwargs)
         else:
             await self.interaction.response.send_message(*args, **kwargs)
+            return await self.interaction.original_message()
 
 
 class Flags:
@@ -76,17 +78,12 @@ class Slash(commands.Cog):
         self.bot = bot
         self.bot.loop.create_task(self.build_slash_commands())
 
-    def format_string(self, string, size):
-        if len(string) > size:
-            return string[: size - 3] + "..."
-        return string
-
     async def parse_options(self, command):
         if isinstance(command, commands.Group):
             return [
                 {
                     "name": command.name,
-                    "description": self.format_string(
+                    "description": methods.format_string(
                         command.help or "no decription", 100
                     ),
                     "type": 1,
@@ -152,7 +149,7 @@ class Slash(commands.Cog):
         cmds = [
             {
                 "name": command.name,
-                "description": self.format_string(
+                "description": methods.format_string(
                     command.help or "no description", 100
                 ),
                 "options": await self.parse_options(command),
@@ -225,6 +222,7 @@ class Slash(commands.Cog):
             command,
             interaction,
         )
+        print(ctx.message)
         params = []
         kwargs = {}
         for name, param in command.clean_params.items():
