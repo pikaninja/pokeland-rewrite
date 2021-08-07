@@ -1,4 +1,5 @@
 import io
+import copy
 import discord
 import textwrap
 import traceback
@@ -46,6 +47,18 @@ class Admin(commands.Cog):
 
         await ctx.bot.db.insert_pokemon(target, pokemon["species_id"], shiny=shiny)
         await ctx.message.add_reaction("\U00002705")
+
+    @dev.command()
+    @commands.is_owner()
+    async def sudo(self, ctx, target: discord.User, *, command):
+        """Sudo the command as another user"""
+        message = copy.copy(ctx.message)
+        message.author = target
+        message.content = f"{ctx.prefix}{command}"
+
+        context = await ctx.bot.get_context(message)
+        await ctx.bot.invoke(context)
+
 
     @dev.command()
     @commands.is_owner()
