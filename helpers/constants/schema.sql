@@ -71,3 +71,4 @@ CREATE TABLE pokemon(
 
 
 CREATE INDEX pokemon_idx ON pokemon(idx);
+CREATE INDEX pokemon_id ON pokemon(id);

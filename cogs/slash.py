@@ -10,16 +10,20 @@ import datetime
 import discord
 from discord.ext import commands
 
+
 @dataclass
 class FakeUser:
     name: str
     discrim: str
     id: str
+
     def __str__(self):
         return f"{self.name}#{self.discrim}"
+
     @property
     def mention(self):
         return f"<@{self.id}>"
+
 
 @dataclass
 class FalseMessage:
@@ -118,11 +122,10 @@ class Slash(commands.Cog):
                             "name": name,
                             "description": name,
                             "type": type,
-                            "required": required
+                            "required": required,
                         }
                     )
                 continue
-                
 
             if type in self.DISCORD_TYPES:
                 options.append(
@@ -186,7 +189,10 @@ class Slash(commands.Cog):
         return option["value"]
 
     def is_flag(self, annotation):
-        return (inspect.isclass(annotation) and issubclass(annotation, commands.FlagConverter)) or isinstance(annotation, commands.FlagConverter)
+        return (
+            inspect.isclass(annotation)
+            and issubclass(annotation, commands.FlagConverter)
+        ) or isinstance(annotation, commands.FlagConverter)
 
     @commands.Cog.listener()
     async def on_interaction(self, interaction: discord.Interaction):

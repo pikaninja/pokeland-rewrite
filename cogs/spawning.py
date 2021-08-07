@@ -32,6 +32,11 @@ class Spawning(commands.Cog):
     async def spawn_pokemon(
         self, channel, pokemon=None, *, guild=None, connection=None
     ):
+        dummy_ctx = discord.Object(id=0)
+        dummy_message = discord.Object(id=0)
+        dummy_message.channel = channel
+        dummy_ctx.message = dummy_message
+        self.hint.reset_cooldown(dummy_ctx)
         if not guild:
             guild = await self.bot.db.get_guild(channel.guild, connection=connection)
 
@@ -121,6 +126,22 @@ class Spawning(commands.Cog):
                     )
         await ctx.send(message)
 
+    @commands.command()
+    @commands.cooldown(1, 20, type=commands.BucketType.channel)
+    async def hint(self, ctx):
+        if not self.spawns[ctx.channel.id]["pokemon"]:
+            return await ctx.send("Theres no wild pokemon currently!")
+
+        name = self.spawns[ctx.channel.id]["pokemon"]["name"]
+
+        to_display = random.sample(
+            range(len(name)), k=random.randint(2, len(name) // 2)
+        )
+        hint = "".join(
+            l if index in to_display else r"\_" for index, l in enumerate(name)
+        )
+        await ctx.send(f"The wild pokemon is: {hint}")
+
     async def calculate_xp(self, message, *, connection=None):
         connection = connection or self.bot.db.connection
         user = await self.bot.db.get_user(message.author, connection=connection)
@@ -151,7 +172,7 @@ class Spawning(commands.Cog):
             embed.description = f"Your {pokemon.name} is now level {pokemon.level}!"
 
             data = self.bot.data.get_species_by_id(pokemon.species_id)
-            if pokemon.level >= data["evolution_level"]:
+            if pokemon.level >= data.get("evolution_level", 101):
                 oldname = pokemon.name
                 pokemon.species_id = data["evolution"]
                 embed.add_field(
@@ -183,14 +204,13 @@ class Spawning(commands.Cog):
             if time.perf_counter() - cd <= 0.5:
                 return
         self.cooldown[message.author.id] = time.perf_counter()
-
-        async with self.bot.connection.acquire() as connection:
-            async with connection.transaction():
-                self.spawns[message.channel.id]["count"] += 1
-                if (
-                    self.spawns[message.channel.id]["count"]
-                    >= self.spawns[message.channel.id]["goal"]
-                ):
+        self.spawns[message.channel.id]["count"] += 1
+        if (
+            self.spawns[message.channel.id]["count"]
+            >= self.spawns[message.channel.id]["goal"]
+        ):
+            async with self.bot.connection.acquire() as connection:
+                async with connection.transaction():
                     guild = await self.bot.db.get_guild(
                         message.guild, connection=connection
                     )

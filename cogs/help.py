@@ -4,6 +4,7 @@ from discord.ext.commands import cog
 from helpers import constants, methods, misc
 from discord.ext import commands
 
+
 class HelpSelect(discord.ui.Select):
     def __init__(self, help_command, filtered_mapping, view):
         self.help_command = help_command
@@ -13,11 +14,13 @@ class HelpSelect(discord.ui.Select):
                 discord.components.SelectOption(
                     label=cog.qualified_name,
                     value=cog.qualified_name,
-                    description=methods.format_string(cog.description, 47)
+                    description=methods.format_string(cog.description, 47),
                 )
-                for cog in filtered_mapping if cog
-            ]
+                for cog in filtered_mapping
+                if cog
+            ],
         )
+
     async def callback(self, interaction):
         selected = self.help_command.context.bot.get_cog(self.values[0])
         await self.help_command.send_cog_help(selected, view=self.view)
@@ -39,8 +42,8 @@ class CustomHelp(commands.HelpCommand):
 
     async def send_bot_help(self, mapping):
         embed = constants.Embed(
-            title = "Pokeland Help!",
-            description = f"Use `{self.context.prefix}help <command/category>` for more infomation"
+            title="Pokeland Help!",
+            description=f"Use `{self.context.prefix}help <command/category>` for more infomation",
         )
         embed.set_thumbnail(url=self.context.me.avatar.url)
         filtered = {}
@@ -55,7 +58,11 @@ class CustomHelp(commands.HelpCommand):
             else:
                 name = "No Category"
                 value = "Commands with no category"
-            embed.add_field(name=name, value=f"{value}\n{' '.join(f'`{command.qualified_name}`' for command in commands[:25])}", inline=False)
+            embed.add_field(
+                name=name,
+                value=f"{value}\n{' '.join(f'`{command.qualified_name}`' for command in commands[:25])}",
+                inline=False,
+            )
 
         view = misc.RestrictedView(owner=self.context.author)
         view.add_item(HelpSelect(self, filtered, view))
@@ -67,12 +74,16 @@ class CustomHelp(commands.HelpCommand):
             help = cmd.help or "No help provided..."
             if isinstance(cmd, commands.Group):
                 help = f"[Group] {help}"
-            embed.add_field(name=self.get_command_signature(cmd), value=help, inline=False)
+            embed.add_field(
+                name=self.get_command_signature(cmd), value=help, inline=False
+            )
 
-    async def send_cog_help(self, cog, view = None):
+    async def send_cog_help(self, cog, view=None):
         embed = constants.Embed(title=f"{cog.qualified_name} Help!".title())
         embed.set_thumbnail(url=self.context.me.avatar.url)
-        self.add_commands_to_embed(embed, await self.filter_commands(cog.get_commands()))
+        self.add_commands_to_embed(
+            embed, await self.filter_commands(cog.get_commands())
+        )
         if self.current_message:
             await self.current_message.edit(embed=embed, view=view)
         else:
@@ -81,8 +92,8 @@ class CustomHelp(commands.HelpCommand):
 
     async def send_command_help(self, command):
         embed = constants.Embed(
-            title = self.get_command_signature(command),
-            description = command.help or "No help provided..."
+            title=self.get_command_signature(command),
+            description=command.help or "No help provided...",
         )
         if command.cog:
             category = command.cog.qualified_name
@@ -112,20 +123,17 @@ class CustomHelp(commands.HelpCommand):
         if not cmds:
             return await self.send_command_help(group)
         embed = constants.Embed(
-            title = self.get_command_signature(group),
-            description = f"{group.help or 'No help provided...'}\nUse `{self.context.prefix}help <command>` for more infomation"
+            title=self.get_command_signature(group),
+            description=f"{group.help or 'No help provided...'}\nUse `{self.context.prefix}help <command>` for more infomation",
         )
         self.add_commands_to_embed(embed, cmds)
         destination = self.get_destination()
         await destination.send(embed=embed)
 
-        
-        
-
-
 
 def setup(bot):
     bot.help_command = CustomHelp()
+
 
 def teardown(bot):
     bot.help_command = commands.DefaultHelpCommand()
