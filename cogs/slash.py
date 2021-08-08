@@ -43,6 +43,10 @@ class SlashContext:
     current_parameter: int = 0
     prefix: str = "/"
 
+    @property
+    def cog(self):
+        return self.command.cog
+
     async def send(self, *args, **kwargs):
         if self.interaction.response.is_done():
             return await self.interaction.followup.send(*args, **kwargs)
@@ -228,7 +232,6 @@ class Slash(commands.Cog):
             command,
             interaction,
         )
-        print(ctx.message)
         params = []
         kwargs = {}
         for name, param in command.clean_params.items():

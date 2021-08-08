@@ -18,10 +18,19 @@ class HelpSelect(discord.ui.Select):
                 )
                 for cog in filtered_mapping
                 if cog
+            ] + [
+                discord.components.SelectOption(
+                    label="View the tutorial",
+                    value="tutorial",
+                    description="Get a tutorial of the bot"
+                )
             ],
         )
 
     async def callback(self, interaction):
+        if self.values[0] == "tutorial":
+            await self.help_command.current_message.delete()
+            return await self.help_command.context.bot.get_command("tutorial")(self.help_command.context)
         selected = self.help_command.context.bot.get_cog(self.values[0])
         await self.help_command.send_cog_help(selected, view=self.view)
 

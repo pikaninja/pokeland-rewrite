@@ -4,6 +4,7 @@ CREATE TABLE users(
     id BIGINT PRIMARY KEY,
     started TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     disabled BOOL DEFAULT FALSE,
+    staff BOOL DEFAULT FALSE,
     order_by TEXT DEFAULT 'idx',
     selected INT,
     --economy stuff
@@ -43,7 +44,6 @@ CREATE TABLE pokemon(
     user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
     idx INT NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    staff BOOL DEFAULT FALSE,
 
     --general pokemon info
     species_id INT NOT NULL,

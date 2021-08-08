@@ -4,7 +4,7 @@ from typing import NamedTuple
 from discord import file
 
 import discord
-from helpers import constants
+from helpers import constants, misc
 from discord.ext import commands
 
 
@@ -12,17 +12,53 @@ class ExpiredCache(NamedTuple):
     count: int
     expires: datetime.datetime
 
+class TutorialSelect(discord.ui.Select):
+    def __init__(self, tutorial):
+        self.tutorial = tutorial
+        super().__init__(
+            placeholder="Select a cateogyr",
+            options=[
+                discord.components.SelectOption(
+                    label=t,
+                    value=t,
+                    description=getattr(self.tutorial, t).__doc__
+                )
+                for t in self.tutorial.CATEGORIES
+            ]
+        )
+    async def callback(self, interaction):
+        category = self.values[0]
+        await self.tutorial.message.delete()
+        embed, file = getattr(self.tutorial, category)
+        await interaction.response.send_message(embed=embed, file=file, view=self.view)
+
+
 
 class Tutorial:
     """A tutorial for a specifix user"""
+    CATEGORIES = [
+        "catching",
+    ]
 
-    def __init__(self, user, channel, prefix="p!"):
+    def __init__(self, bot, user, channel, prefix="p!"):
+        self.bot = bot
         self.channel = channel
         self.user = user
         self.prefix = prefix
 
+    async def start(self):
+        print(self.catching.__doc__)
+        embed = constants.Embed(
+            title="Pokeland tutorial",
+        )
+        embed.set_thumbnail(url=self.bot.user.avatar.url)
+        view = misc.RestrictedView(owner=self.user)
+        view.add_item(TutorialSelect(self))
+        self.message = await self.channel.send(embed=embed, view=view)
+
     @property
     def catching(self):
+        """Obtaining pokemon"""
         embed = constants.Embed(
             title="Obtaining pokemon",
             description=(
@@ -30,6 +66,7 @@ class Tutorial:
                 f"You can catch them with {self.prefix}catch <pokemon>"
             ),
         )
+        embed.set_footer(text="You can also trade pokemon with other users! See trade and market")
         embed.set_image(url="attachment://catching.png")
         return (embed, discord.File("assets/catching.png", filename="catching.png"))
 
@@ -85,9 +122,8 @@ class Information(commands.Cog):
     async def tutorial(self, ctx):
         """View a tutorial for the bot"""
         # TODO: MAKE NOT STUPID
-        tutorial = Tutorial(ctx.author, ctx.channel, ctx.prefix)
-        embed, file = tutorial.catching
-        await ctx.send(embed=embed, file=file)
+        tutorial = Tutorial(ctx.bot, ctx.author, ctx.channel, ctx.prefix)
+        await tutorial.start()
 
 
 def setup(bot):
