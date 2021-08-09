@@ -4,6 +4,7 @@ import discord
 import textwrap
 import traceback
 
+from typing import Union
 from contextlib import redirect_stdout
 
 from helpers import misc
@@ -50,7 +51,7 @@ class Admin(commands.Cog):
 
     @dev.command()
     @commands.is_owner()
-    async def sudo(self, ctx, target: discord.User, *, command):
+    async def sudo(self, ctx, target: Union[discord.Member, discord.User], *, command):
         """Sudo the command as another user"""
         message = copy.copy(ctx.message)
         message.author = target
@@ -58,6 +59,15 @@ class Admin(commands.Cog):
 
         context = await ctx.bot.get_context(message)
         await ctx.bot.invoke(context)
+
+    @dev.command()
+    @commands.is_owner()
+    async def bypass(self, ctx, *, command):
+        message = copy.copy(ctx.message)
+        message.content = f"{ctx.prefix}{command}"
+
+        context = await ctx.bot.get_context(message)
+        await context.reinvoke()
 
 
     @dev.command()

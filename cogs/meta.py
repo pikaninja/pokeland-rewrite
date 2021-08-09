@@ -52,7 +52,7 @@ class Meta(commands.Cog):
         await ctx.send(f"I have disabled `{feature}`")
 
     @commands.command(usage="<commands/spawns>")
-    @commands.has_guild_permissions(manager_guild=True)
+    @commands.has_guild_permissions(manage_guild=True)
     async def enable(
         self, ctx, feature: Literal["command", "spawns", "commands", "spawn"]
     ):
@@ -70,7 +70,7 @@ class Meta(commands.Cog):
         await ctx.send(f"I have enabled `{feature}`")
 
     @commands.command(usage="<toggle/true/false>")
-    @commands.has_guild_permissions(manager_guild=True)
+    @commands.has_guild_permissions(manage_guild=True)
     async def compact(self, ctx, option: Literal["toggle", "true", "false"]):
         """Controls whether or not to send messages on levelup"""
         if option == "toggle":

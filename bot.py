@@ -59,7 +59,7 @@ class Pokeland(store_true.StoreTrueMixin, commands.Bot):
         self.logger.addHandler(handler)
         self.data = DataManager(self)
 
-        super().__init__(command_prefix=prefix, case_insensitive=True)
+        super().__init__(command_prefix=prefix, case_insensitive=True, strip_after_prefix=True)
 
         self.loop.run_until_complete(self.setup())
 
