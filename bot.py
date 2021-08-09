@@ -57,7 +57,7 @@ class Pokeland(store_true.StoreTrueMixin, commands.Bot):
         handler = logging.StreamHandler(sys.stdout)
         handler.setFormatter(LoggingFormat())
         self.logger.addHandler(handler)
-        self.data = DataManager()
+        self.data = DataManager(self)
 
         super().__init__(command_prefix=prefix, case_insensitive=True)
 

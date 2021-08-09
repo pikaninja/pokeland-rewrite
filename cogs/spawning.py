@@ -58,7 +58,7 @@ class Spawning(commands.Cog):
             title="A wild pokemon as appeared!",
             description=f"Guess the pokémon's name and type `{await self.bot.get_cog('Meta').get_prefix(channel.guild)}catch <pokemon>` to catch it!",
         )
-        embed.compact_image(guild, url=pokemon["normal"])
+        embed.compact_image(guild, url=self.bot.data.image(pokemon["species_id"]))
 
         await channel.send(embed=embed)
 

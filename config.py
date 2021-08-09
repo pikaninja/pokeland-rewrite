@@ -11,6 +11,7 @@ class Config(NamedTuple):
     db_string: str
     extensions: List[str]
     error_log_channel_id: int
+    image_server_url: str
 
 
 extensions = [f"cogs.{extension}" for extension in config["bot"]["extensions"]]
@@ -21,4 +22,5 @@ config = Config(
     config["database"]["string"],
     extensions,
     config["bot"]["error_log_channel_id"],
+    config["bot"]["image_server_url"]
 )

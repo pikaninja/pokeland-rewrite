@@ -21,7 +21,7 @@ class TutorialSelect(discord.ui.Select):
                 discord.components.SelectOption(
                     label=t,
                     value=t,
-                    description=getattr(self.tutorial, t).__doc__
+                    description=getattr(Tutorial, t).__doc__
                 )
                 for t in self.tutorial.CATEGORIES
             ]

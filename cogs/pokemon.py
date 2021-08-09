@@ -101,7 +101,7 @@ class Pokemon(commands.Cog):
 
         embed.compact_image(
             await self.bot.db.get_guild(ctx.guild),
-            url=data["shiny"] if pokemon.shiny else data["normal"],
+            url=self.bot.data.image(pokemon.species_id, pokemon.shiny)
         )
 
         embed.set_footer(text=f"Displaying ID: {pokemon.idx}. Global ID: {pokemon.id}")
@@ -172,7 +172,7 @@ class Pokemon(commands.Cog):
         embed.add_field(name="Types", value=(", ".join(pokemon["types"])))
         embed.compact_image(
             await self.bot.db.get_guild(ctx.guild),
-            url=pokemon["normal"] if not shiny else pokemon["shiny"],
+            url=self.bot.data.image(pokemon["species_id"], shiny=shiny),
         )
         await ctx.send(embed=embed)
 

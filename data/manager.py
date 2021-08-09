@@ -3,9 +3,16 @@ from functools import cached_property
 
 
 class DataManager:
-    def __init__(self):
+    def __init__(self, bot=None):
         with open("data/pokemon.json") as f:
             self.og_data = json.load(f)
+        self.bot = bot
+
+    def image(self, species_id, shiny=False):
+        if self.bot:
+            return f"{self.bot.config.image_server_url}/pokemon/{'shiny/' if shiny else ''}{species_id}.png"
+        return self.data[species_id]["normal" if not shiny else "shiny"]
+
 
     @cached_property
     def data(self):

@@ -1,49 +1,20 @@
 [
     {
+        "name": "compact",
+        "description": "Controls whether or not to send messages on levelup",
+        "options": [
+            {
+                "name": "option",
+                "description": "option",
+                "type": 3,
+                "required": true
+            }
+        ]
+    },
+    {
         "name": "botinfo",
         "description": "View some basic infomation of the bot",
         "options": []
-    },
-    {
-        "name": "tutorial",
-        "description": "View a tutorial for the bot",
-        "options": []
-    },
-    {
-        "name": "pick",
-        "description": "Select your starter",
-        "options": [
-            {
-                "name": "pokemon",
-                "description": "pokemon",
-                "type": 3,
-                "required": true
-            }
-        ]
-    },
-    {
-        "name": "catch",
-        "description": "Catch a pokemon!",
-        "options": [
-            {
-                "name": "pokemon",
-                "description": "pokemon",
-                "type": 3,
-                "required": true
-            }
-        ]
-    },
-    {
-        "name": "enable",
-        "description": "Enable disabled features in the channel",
-        "options": [
-            {
-                "name": "feature",
-                "description": "feature",
-                "type": 3,
-                "required": true
-            }
-        ]
     },
     {
         "name": "help",
@@ -58,8 +29,25 @@
         ]
     },
     {
-        "name": "compact",
-        "description": "Controls whether or not to send messages on levelup",
+        "name": "info",
+        "description": "View infomation on your pokemon",
+        "options": [
+            {
+                "name": "pokemon",
+                "description": "pokemon",
+                "type": 3,
+                "required": false
+            }
+        ]
+    },
+    {
+        "name": "hint",
+        "description": "no description",
+        "options": []
+    },
+    {
+        "name": "hide_levelup",
+        "description": "Toggles whether or not to send messages on levelup",
         "options": [
             {
                 "name": "option",
@@ -82,12 +70,54 @@
         ]
     },
     {
-        "name": "hide_levelup",
-        "description": "Toggles whether or not to send messages on levelup",
+        "name": "pokemon",
+        "description": "View your pokemon",
         "options": [
             {
-                "name": "option",
-                "description": "option",
+                "name": "page",
+                "description": "page",
+                "type": 4,
+                "required": false
+            },
+            {
+                "name": "name",
+                "description": "name",
+                "type": 3,
+                "required": false
+            },
+            {
+                "name": "level",
+                "description": "level",
+                "type": 4,
+                "required": false
+            },
+            {
+                "name": "legendary",
+                "description": "legendary",
+                "type": 5,
+                "required": false
+            },
+            {
+                "name": "mythical",
+                "description": "mythical",
+                "type": 5,
+                "required": false
+            },
+            {
+                "name": "ultrabeast",
+                "description": "ultrabeast",
+                "type": 5,
+                "required": false
+            }
+        ]
+    },
+    {
+        "name": "pick",
+        "description": "Select your starter",
+        "options": [
+            {
+                "name": "pokemon",
+                "description": "pokemon",
                 "type": 3,
                 "required": true
             }
@@ -99,17 +129,12 @@
         "options": []
     },
     {
-        "name": "start",
-        "description": "Begin your journey into the world of pokemon!",
-        "options": []
-    },
-    {
         "name": "prefix",
         "description": "The group command for prefix management, use with no subcommand to view current prefix",
         "options": [
             {
-                "name": "set",
-                "description": "Set the prefix for the guild to somethign else",
+                "name": "reset",
+                "description": "Reset the prefix to the default prefix",
                 "type": 1,
                 "options": [
                     {
@@ -121,8 +146,8 @@
                 ]
             },
             {
-                "name": "reset",
-                "description": "Reset the prefix to the default prefix",
+                "name": "set",
+                "description": "Set the prefix for the guild to somethign else",
                 "type": 1,
                 "options": [
                     {
@@ -139,6 +164,31 @@
         "name": "dev",
         "description": "The group command for development commands",
         "options": [
+            {
+                "name": "give_pokemon",
+                "description": "Add pokemon to a user",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "target",
+                        "description": "target",
+                        "type": 6,
+                        "required": true
+                    },
+                    {
+                        "name": "pokemon",
+                        "description": "pokemon",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "random_spawn",
+                "description": "Spawn a random pokemon",
+                "type": 1,
+                "options": []
+            },
             {
                 "name": "sudo",
                 "description": "Sudo the command as another user",
@@ -196,84 +246,34 @@
                         "required": true
                     }
                 ]
-            },
-            {
-                "name": "give_pokemon",
-                "description": "Add pokemon to a user",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "target",
-                        "description": "target",
-                        "type": 6,
-                        "required": true
-                    },
-                    {
-                        "name": "pokemon",
-                        "description": "pokemon",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "random_spawn",
-                "description": "Spawn a random pokemon",
-                "type": 1,
-                "options": []
             }
         ]
     },
     {
-        "name": "hint",
-        "description": "no description",
+        "name": "start",
+        "description": "Begin your journey into the world of pokemon!",
         "options": []
     },
     {
-        "name": "pokemon",
-        "description": "View your pokemon",
+        "name": "catch",
+        "description": "Catch a pokemon!",
         "options": [
             {
-                "name": "page",
-                "description": "page",
-                "type": 4,
-                "required": false
-            },
-            {
-                "name": "name",
-                "description": "name",
+                "name": "pokemon",
+                "description": "pokemon",
                 "type": 3,
-                "required": false
-            },
-            {
-                "name": "level",
-                "description": "level",
-                "type": 4,
-                "required": false
-            },
-            {
-                "name": "legendary",
-                "description": "legendary",
-                "type": 5,
-                "required": false
-            },
-            {
-                "name": "mythical",
-                "description": "mythical",
-                "type": 5,
-                "required": false
-            },
-            {
-                "name": "ultrabeast",
-                "description": "ultrabeast",
-                "type": 5,
-                "required": false
+                "required": true
             }
         ]
     },
     {
         "name": "balance",
         "description": "View your current balance",
+        "options": []
+    },
+    {
+        "name": "tutorial",
+        "description": "View a tutorial for the bot",
         "options": []
     },
     {
@@ -313,14 +313,14 @@
         ]
     },
     {
-        "name": "info",
-        "description": "View infomation on your pokemon",
+        "name": "enable",
+        "description": "Enable disabled features in the channel",
         "options": [
             {
-                "name": "pokemon",
-                "description": "pokemon",
+                "name": "feature",
+                "description": "feature",
                 "type": 3,
-                "required": false
+                "required": true
             }
         ]
     }
