@@ -1,20 +1,54 @@
 [
     {
-        "name": "compact",
-        "description": "Controls whether or not to send messages on levelup",
+        "name": "hint",
+        "description": "no description",
+        "options": []
+    },
+    {
+        "name": "tutorial",
+        "description": "View a tutorial for the bot",
+        "options": []
+    },
+    {
+        "name": "balance",
+        "description": "View your current balance",
+        "options": []
+    },
+    {
+        "name": "pick",
+        "description": "Select your starter",
         "options": [
             {
-                "name": "option",
-                "description": "option",
+                "name": "pokemon",
+                "description": "pokemon",
                 "type": 3,
                 "required": true
             }
         ]
     },
     {
-        "name": "botinfo",
-        "description": "View some basic infomation of the bot",
-        "options": []
+        "name": "catch",
+        "description": "Catch a pokemon!",
+        "options": [
+            {
+                "name": "pokemon",
+                "description": "pokemon",
+                "type": 3,
+                "required": true
+            }
+        ]
+    },
+    {
+        "name": "redeem",
+        "description": "Redeem credits or a pokemon",
+        "options": [
+            {
+                "name": "pokemon",
+                "description": "pokemon",
+                "type": 3,
+                "required": false
+            }
+        ]
     },
     {
         "name": "help",
@@ -29,31 +63,128 @@
         ]
     },
     {
-        "name": "info",
-        "description": "View infomation on your pokemon",
+        "name": "dev",
+        "description": "The group command for development commands",
         "options": [
             {
-                "name": "pokemon",
-                "description": "pokemon",
-                "type": 3,
-                "required": false
+                "name": "random_spawn",
+                "description": "Spawn a random pokemon",
+                "type": 1,
+                "options": []
+            },
+            {
+                "name": "give_pokemon",
+                "description": "Add pokemon to a user",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "target",
+                        "description": "target",
+                        "type": 6,
+                        "required": true
+                    },
+                    {
+                        "name": "pokemon",
+                        "description": "pokemon",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "sql",
+                "description": "Run an sql query",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "code",
+                        "description": "code",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "eval",
+                "description": "Evaluate code",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "code",
+                        "description": "code",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "spawn",
+                "description": "no decription",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "pokemon",
+                        "description": "pokemon",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "sudo",
+                "description": "Sudo the command as another user",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "target",
+                        "description": "target",
+                        "type": 6,
+                        "required": true
+                    },
+                    {
+                        "name": "command",
+                        "description": "command",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
             }
         ]
     },
     {
-        "name": "hint",
-        "description": "no description",
+        "name": "start",
+        "description": "Begin your journey into the world of pokemon!",
         "options": []
     },
     {
-        "name": "hide_levelup",
-        "description": "Toggles whether or not to send messages on levelup",
+        "name": "prefix",
+        "description": "The group command for prefix management, use with no subcommand to view current prefix",
         "options": [
             {
-                "name": "option",
-                "description": "option",
-                "type": 3,
-                "required": true
+                "name": "set",
+                "description": "Set the prefix for the guild to somethign else",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "prefix",
+                        "description": "prefix",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "reset",
+                "description": "Reset the prefix to the default prefix",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "prefix",
+                        "description": "prefix",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
             }
         ]
     },
@@ -64,6 +195,18 @@
             {
                 "name": "args",
                 "description": "args",
+                "type": 3,
+                "required": true
+            }
+        ]
+    },
+    {
+        "name": "hide_levelup",
+        "description": "Toggles whether or not to send messages on levelup",
+        "options": [
+            {
+                "name": "option",
+                "description": "option",
                 "type": 3,
                 "required": true
             }
@@ -112,12 +255,24 @@
         ]
     },
     {
-        "name": "pick",
-        "description": "Select your starter",
+        "name": "info",
+        "description": "View infomation on your pokemon",
         "options": [
             {
                 "name": "pokemon",
                 "description": "pokemon",
+                "type": 3,
+                "required": false
+            }
+        ]
+    },
+    {
+        "name": "compact",
+        "description": "Controls whether or not to send messages on levelup",
+        "options": [
+            {
+                "name": "option",
+                "description": "option",
                 "type": 3,
                 "required": true
             }
@@ -129,176 +284,21 @@
         "options": []
     },
     {
-        "name": "prefix",
-        "description": "The group command for prefix management, use with no subcommand to view current prefix",
+        "name": "enable",
+        "description": "Enable disabled features in the channel",
         "options": [
             {
-                "name": "reset",
-                "description": "Reset the prefix to the default prefix",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "prefix",
-                        "description": "prefix",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "set",
-                "description": "Set the prefix for the guild to somethign else",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "prefix",
-                        "description": "prefix",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "name": "dev",
-        "description": "The group command for development commands",
-        "options": [
-            {
-                "name": "give_pokemon",
-                "description": "Add pokemon to a user",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "target",
-                        "description": "target",
-                        "type": 6,
-                        "required": true
-                    },
-                    {
-                        "name": "pokemon",
-                        "description": "pokemon",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "random_spawn",
-                "description": "Spawn a random pokemon",
-                "type": 1,
-                "options": []
-            },
-            {
-                "name": "sudo",
-                "description": "Sudo the command as another user",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "target",
-                        "description": "target",
-                        "type": 6,
-                        "required": true
-                    },
-                    {
-                        "name": "command",
-                        "description": "command",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "spawn",
-                "description": "no decription",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "pokemon",
-                        "description": "pokemon",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "eval",
-                "description": "Evaluate code",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "code",
-                        "description": "code",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "sql",
-                "description": "Run an sql query",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "code",
-                        "description": "code",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "name": "start",
-        "description": "Begin your journey into the world of pokemon!",
-        "options": []
-    },
-    {
-        "name": "catch",
-        "description": "Catch a pokemon!",
-        "options": [
-            {
-                "name": "pokemon",
-                "description": "pokemon",
+                "name": "feature",
+                "description": "feature",
                 "type": 3,
                 "required": true
             }
         ]
     },
     {
-        "name": "balance",
-        "description": "View your current balance",
+        "name": "botinfo",
+        "description": "View some basic infomation of the bot",
         "options": []
-    },
-    {
-        "name": "tutorial",
-        "description": "View a tutorial for the bot",
-        "options": []
-    },
-    {
-        "name": "redeem",
-        "description": "Redeem credits or a pokemon",
-        "options": [
-            {
-                "name": "pokemon",
-                "description": "pokemon",
-                "type": 3,
-                "required": false
-            }
-        ]
-    },
-    {
-        "name": "redirect",
-        "description": "Config the redirect settings for the server, when set, all spawns will be redirected to these cha...",
-        "options": [
-            {
-                "name": "channels",
-                "description": "channels",
-                "type": 3,
-                "required": true
-            }
-        ]
     },
     {
         "name": "disable",
@@ -313,12 +313,12 @@
         ]
     },
     {
-        "name": "enable",
-        "description": "Enable disabled features in the channel",
+        "name": "redirect",
+        "description": "Config the redirect settings for the server, when set, all spawns will be redirected to these cha...",
         "options": [
             {
-                "name": "feature",
-                "description": "feature",
+                "name": "channels",
+                "description": "channels",
                 "type": 3,
                 "required": true
             }
