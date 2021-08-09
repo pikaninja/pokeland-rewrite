@@ -17,8 +17,9 @@ from jishaku.codeblocks import codeblock_converter
 
 class Admin(commands.Cog):
     """Commands for bot administration"""
-    def __init__(self):
-        self.checked_at = time.time()
+    def __init__(self, bot):
+        if not hasattr(bot, "extension_checked_at"):
+            bot.extension_checked_at = time.time()
 
     @commands.group(case_insensitive=True)
     @commands.is_owner()
@@ -109,7 +110,7 @@ class Admin(commands.Cog):
                 if not file.exists():
                     continue
                 modified = file.stat().st_mtime
-                if modified > self.checked_at:
+                if modified > ctx.bot.extension_checked_at:
                     try:
                         ctx.bot.reload_extension(extension)
                     except Exception as e:
@@ -118,7 +119,7 @@ class Admin(commands.Cog):
                         message.append("\N{WHITE HEAVY CHECK MARK}" f" {extension}")
             if not message:
                 message.append("No extensions to reload!")
-            self.checked_at = time.time()
+            ctx.bot.extension_checked_at = time.time()
             await ctx.send("\n".join(message))
 
     @dev.command(name="eval")
@@ -163,4 +164,4 @@ class Admin(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Admin())
+    bot.add_cog(Admin(bot))
