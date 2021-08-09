@@ -1,6 +1,8 @@
 import io
 import copy
+import time
 import discord
+import pathlib
 import textwrap
 import traceback
 
@@ -15,6 +17,8 @@ from jishaku.codeblocks import codeblock_converter
 
 class Admin(commands.Cog):
     """Commands for bot administration"""
+    def __init__(self):
+        self.checked_at = time.time()
 
     @commands.group(case_insensitive=True)
     @commands.is_owner()
@@ -88,6 +92,35 @@ class Admin(commands.Cog):
             f"Returned {len(records)} rows in *`{s.time*1000:,.2f}ms`*\n```{table.get_string()}```"
         )
 
+    @dev.command()
+    @commands.is_owner()
+    async def reload(self, ctx, *, extension=None):
+        if extension:
+            try:
+                ctx.bot.reload_extension(extension)
+            except Exception:
+                await ctx.send(f"```{traceback.format_exc()}```")
+            else:
+                await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+        else:
+            message = []
+            for extension in ctx.bot.config.extensions:
+                file = pathlib.Path(extension.replace(".", "/")+".py")
+                if not file.exists():
+                    continue
+                modified = file.stat().st_mtime
+                if modified > self.checked_at:
+                    try:
+                        ctx.bot.reload_extension(extension)
+                    except Exception as e:
+                        message.append("\N{CROSS MARK}" f" {extension} {e}")
+                    else:
+                        message.append("\N{WHITE HEAVY CHECK MARK}" f" {extension}")
+            if not message:
+                message.append("No extensions to reload!")
+            self.checked_at = time.time()
+            await ctx.send("\n".join(message))
+
     @dev.command(name="eval")
     @commands.is_owner()
     async def _eval(self, ctx, *, code):
@@ -130,4 +163,4 @@ class Admin(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Admin(bot))
+    bot.add_cog(Admin())
