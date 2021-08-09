@@ -164,8 +164,6 @@ class Slash(commands.Cog):
             for command in self.bot.commands
             if command.qualified_name != "jishaku"
         ]
-        with open("test.json", "w") as f:
-            json.dump(cmds, f, indent=4)
         url = f"{discord.http.Route.BASE}/applications/{self.bot.user.id}/commands"
         headers = {"Authorization": f"Bot {self.bot.http.token}"}
         async with self.bot.session.put(url, headers=headers, json=cmds) as resp:

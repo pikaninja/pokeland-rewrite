@@ -31,6 +31,7 @@ class Meta(commands.Cog):
         return guild.prefix or self.bot.config.prefix
 
     @commands.command(usage="<commands/spawns>")
+    @commands.has_guild_permissions(manage_guild=True)
     async def disable(
         self, ctx, feature: Literal["command", "spawns", "commands", "spawn"]
     ):
@@ -51,6 +52,7 @@ class Meta(commands.Cog):
         await ctx.send(f"I have disabled `{feature}`")
 
     @commands.command(usage="<commands/spawns>")
+    @commands.has_guild_permissions(manager_guild=True)
     async def enable(
         self, ctx, feature: Literal["command", "spawns", "commands", "spawn"]
     ):
@@ -68,6 +70,7 @@ class Meta(commands.Cog):
         await ctx.send(f"I have enabled `{feature}`")
 
     @commands.command(usage="<toggle/true/false>")
+    @commands.has_guild_permissions(manager_guild=True)
     async def compact(self, ctx, option: Literal["toggle", "true", "false"]):
         """Controls whether or not to send messages on levelup"""
         if option == "toggle":
@@ -89,7 +92,7 @@ class Meta(commands.Cog):
             await ctx.send("Alright, I will no longer compact images")
 
     @commands.command()
-    @commands.has_permissions(manage_guild=True)
+    @commands.has_guild_permissions(manage_guild=True)
     async def redirect(self, ctx, channels: commands.Greedy[discord.TextChannel]):
         """Config the redirect settings for the server, when set, all spawns will be redirected to these channels"""
         if not channels:
@@ -140,7 +143,7 @@ class Meta(commands.Cog):
 
     @prefix.command()
     @commands.guild_only()
-    @commands.has_permissions(manage_guild=True)
+    @commands.has_guild_permissions(manage_guild=True)
     async def set(self, ctx, prefix):
         """Set the prefix for the guild to somethign else"""
         await self.bot.connection.execute(
@@ -152,7 +155,7 @@ class Meta(commands.Cog):
 
     @prefix.command()
     @commands.guild_only()
-    @commands.has_permissions(manage_guild=True)
+    @commands.has_guild_permissions(manage_guild=True)
     async def reset(self, ctx, prefix):
         """Reset the prefix to the default prefix"""
         await self.bot.connection.execute(
