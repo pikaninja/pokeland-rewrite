@@ -22,5 +22,5 @@ config = Config(
     config["database"]["string"],
     extensions,
     config["bot"]["error_log_channel_id"],
-    config["bot"]["image_server_url"]
+    config["bot"]["image_server_url"],
 )

@@ -13,7 +13,6 @@ class DataManager:
             return f"{self.bot.config.image_server_url}/{'shiny/' if shiny else 'normal/'}{species_id}.png"
         return self.data[species_id]["normal" if not shiny else "shiny"]
 
-
     @cached_property
     def data(self):
         mapping = {}

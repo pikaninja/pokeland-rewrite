@@ -101,7 +101,7 @@ class Pokemon(commands.Cog):
 
         embed.compact_image(
             await self.bot.db.get_guild(ctx.guild),
-            url=self.bot.data.image(pokemon.species_id, pokemon.shiny)
+            url=self.bot.data.image(pokemon.species_id, pokemon.shiny),
         )
 
         embed.set_footer(text=f"Displaying ID: {pokemon.idx}. Global ID: {pokemon.id}")

@@ -12,6 +12,7 @@ class ExpiredCache(NamedTuple):
     count: int
     expires: datetime.datetime
 
+
 class TutorialSelect(discord.ui.Select):
     def __init__(self, tutorial):
         self.tutorial = tutorial
@@ -19,13 +20,12 @@ class TutorialSelect(discord.ui.Select):
             placeholder="Select a cateogyr",
             options=[
                 discord.components.SelectOption(
-                    label=t,
-                    value=t,
-                    description=getattr(Tutorial, t).__doc__
+                    label=t, value=t, description=getattr(Tutorial, t).__doc__
                 )
                 for t in self.tutorial.CATEGORIES
-            ]
+            ],
         )
+
     async def callback(self, interaction):
         category = self.values[0]
         await self.tutorial.message.delete()
@@ -33,9 +33,9 @@ class TutorialSelect(discord.ui.Select):
         await interaction.response.send_message(embed=embed, file=file, view=self.view)
 
 
-
 class Tutorial:
     """A tutorial for a specifix user"""
+
     CATEGORIES = [
         "catching",
     ]
@@ -66,7 +66,9 @@ class Tutorial:
                 f"You can catch them with {self.prefix}catch <pokemon>"
             ),
         )
-        embed.set_footer(text="You can also trade pokemon with other users! See trade and market")
+        embed.set_footer(
+            text="You can also trade pokemon with other users! See trade and market"
+        )
         embed.set_image(url="attachment://catching.png")
         return (embed, discord.File("assets/catching.png", filename="catching.png"))
 

@@ -69,7 +69,6 @@ class Admin(commands.Cog):
         context = await ctx.bot.get_context(message)
         await context.reinvoke()
 
-
     @dev.command()
     @commands.is_owner()
     async def sql(self, ctx, *, code):
