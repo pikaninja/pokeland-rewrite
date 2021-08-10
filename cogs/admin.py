@@ -37,6 +37,7 @@ class Admin(commands.Cog):
     @dev.command()
     @commands.is_owner()
     async def spawn(self, ctx, *, pokemon):
+        """Spawn a specific pokemon"""
         await ctx.bot.get_cog("Spawning").spawn_pokemon(ctx.channel, pokemon)
 
     @dev.command()
@@ -56,6 +57,20 @@ class Admin(commands.Cog):
 
     @dev.command()
     @commands.is_owner()
+    async def suspend(self, ctx, target: discord.User):
+        """Suspend a user from the bot"""
+        await ctx.bot.connection.execute("UPDATE users SET disabled=true WHERE id = $1", target.id)
+        await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+
+    @dev.command()
+    @commands.is_owner()
+    async def unsuspend(self, ctx, target: discord.User):
+        """Unsuspend a user from the bot"""
+        await ctx.bot.connection.execute("UPDATE users SET disabled=false WHERE id = $1", target.id)
+        await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+
+    @dev.command()
+    @commands.is_owner()
     async def sudo(self, ctx, target: Union[discord.Member, discord.User], *, command):
         """Sudo the command as another user"""
         message = copy.copy(ctx.message)
@@ -68,6 +83,7 @@ class Admin(commands.Cog):
     @dev.command()
     @commands.is_owner()
     async def bypass(self, ctx, *, command):
+        """Bypass the checks for a command"""
         message = copy.copy(ctx.message)
         message.content = f"{ctx.prefix}{command}"
 
@@ -96,6 +112,7 @@ class Admin(commands.Cog):
     @dev.command()
     @commands.is_owner()
     async def reload(self, ctx, *, extension=None):
+        """Reload an extension or all modified extensions"""
         if extension:
             try:
                 ctx.bot.reload_extension(extension)
