@@ -27,7 +27,7 @@ class Database(commands.Cog):
 
         return None
 
-    def format_query_from_flags(self, flags):
+    def format_query_from_flags(self, flags, start=4):
         filters = defaultdict(list)
         if flags and flags.name:
             filters["species_id"].append(
@@ -39,11 +39,11 @@ class Database(commands.Cog):
             filters["in_species_id"].append(list(self.bot.data.legendary.keys()))
         if flags and flags.mythical:
             filters["in_species_id"].append(list(self.bot.data.mythical.keys()))
-        if flags and flags.ultra_beast:
+        if flags and flags.ultrabeast:
             filters["in_species_id"].append(list(self.bot.data.ultra_beast.keys()))
 
         if filters:
-            query, args = self.bot.db.format_query_list(filters, _or=False, start=4)
+            query, args = self.bot.db.format_query_list(filters, _or=False, start=start)
             query = f"AND ({query})"
         else:
             query = ""

@@ -12,6 +12,7 @@ class Config(NamedTuple):
     extensions: List[str]
     error_log_channel_id: int
     image_server_url: str
+    debug: bool
 
 
 extensions = [f"cogs.{extension}" for extension in config["bot"]["extensions"]]
@@ -23,4 +24,5 @@ config = Config(
     extensions,
     config["bot"]["error_log_channel_id"],
     config["bot"]["image_server_url"],
+    config["bot"]["debug"]
 )

@@ -12,6 +12,12 @@ class Bot(commands.Cog):
         self.bot = bot
         self.cd = commands.CooldownMapping.from_cooldown(5, 3, commands.BucketType.user)
 
+    async def bot_check(self, ctx):
+        if self.bot.config.debug and not await self.bot.is_owner(ctx.author):
+            raise commands.CheckFailure("The bot is currently in debug mode, only my developer can use commands!")
+        return True
+
+
     async def bot_check_once(self, ctx):
         bucket = self.cd.get_bucket(ctx.message)
         if retry_after := bucket.update_rate_limit():

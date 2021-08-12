@@ -5,15 +5,36 @@ import discord
 import pathlib
 import textwrap
 import traceback
+import dataclasses
 
 from typing import Union
 from contextlib import redirect_stdout
 
-from helpers import misc
+from helpers import misc, constants
 from discord.ext import commands
 from prettytable import PrettyTable
 from jishaku.codeblocks import codeblock_converter
 
+@dataclasses.dataclass
+class BenchmarkTime:
+    total: float
+    count: int
+    low: float
+    high: float
+    @property
+    def average(self):
+        return self.total/self.count
+
+    def update(self, time):
+        self.total += time
+        self.count += 1
+        if time < self.low:
+            self.low = time
+        if time > self.high:
+            self.high = time
+
+    def __str__(self):
+        return f"Average: `{self.average*1000:,.2f}ms`\nHigh: `{self.high*1000:,.2f}ms`\nLow: `{self.low*1000:,.2f}ms`"
 
 class Admin(commands.Cog):
     """Commands for bot administration"""
@@ -54,6 +75,54 @@ class Admin(commands.Cog):
 
         await ctx.bot.db.insert_pokemon(target, pokemon["species_id"], shiny=shiny)
         await ctx.message.add_reaction("\U00002705")
+
+
+    @dev.command()
+    @commands.is_owner()
+    async def benchmark(self, ctx, times=100):
+        insert = BenchmarkTime(0, 0, 999, -1)
+        delete = BenchmarkTime(0, 0, 999, -1)
+        update = BenchmarkTime(0, 0, 999, -1)
+        query = BenchmarkTime(0, 0, 999, -1)
+        async with ctx.bot.connection.acquire() as conn:
+            async with conn.transaction(): 
+                for i in range(times):
+                    with misc.StopWatch() as s:
+                        pokemon = await ctx.bot.db.insert_pokemon(ctx.author, 1, connection=conn)
+                    insert.update(s.time) 
+
+                    with misc.StopWatch() as s:
+                        await ctx.bot.db.update_pokemon_by_idx(ctx.author, pokemon.idx, dict(species_id=2), connection=conn)
+                    update.update(s.time)
+
+                    with misc.StopWatch() as s:
+                        await ctx.bot.db.get_pokemon_by_idx(ctx.author, pokemon.idx, connection=conn)
+                    query.update(s.time)
+
+                    with misc.StopWatch() as s:
+                        await conn.execute("DELETE FROM pokemon WHERE id = $1", pokemon.id)
+                    delete.update(s.time) 
+        
+        await ctx.send(
+            embed=constants.Embed(
+                title="Benchmarks for PostgreSQL",
+                description=f"Of {times} times"
+            ).add_field(
+                name="Insert", 
+                value=str(insert)
+            ).add_field(
+                name="Delete",
+                value=str(delete)
+            ).add_field(
+                name="Update",
+                value=str(update)
+            ).add_field(
+                name="Query",
+                value=str(query)
+            )
+        )
+            
+
 
     @dev.command()
     @commands.is_owner()

@@ -114,11 +114,11 @@ class Pokemon(commands.Cog):
         self, ctx, page: typing.Optional[int] = 1, *, flags: PokemonFilters = None
     ):
         """View your pokemon"""
-        query, args = self.bot.db.format_query_from_flags(flags)
+        constraints, args = self.bot.db.format_query_from_flags(flags, start=4)
 
-        lower = (page - 1) * 20 + 1
-        upper = (page) * 20
-        query = f"SELECT * FROM (SELECT *, rank() over(order by ({(await self.bot.db.get_user(ctx.author)).order_by})) as rank FROM pokemon) as _ WHERE user_id = $1 AND rank >= $2 AND rank <= $3 {query} ORDER BY rank ASC"
+        lower = (page - 1) * 15 + 1
+        upper = (page) * 15
+        query = f"SELECT * FROM (SELECT *, rank() over(order by ({(await self.bot.db.get_user(ctx.author)).order_by})) as rank FROM pokemon WHERE user_id = $1 {constraints}) as _ WHERE user_id = $1 AND rank >= $2 AND rank <= $3 {constraints} ORDER BY rank ASC"
         pokemons = [
             models.Pokemon(pokemon, self.bot.data)
             for pokemon in await self.bot.connection.fetch(
@@ -129,13 +129,15 @@ class Pokemon(commands.Cog):
                 *args,
             )
         ]
+        constraints, _ = self.bot.db.format_query_from_flags(flags, start=2)
+        size = await self.bot.connection.fetchval(f"SELECT COUNT(id) FROM pokemon WHERE user_id = $1 {constraints}", ctx.author.id, *args)
         if not pokemons:
             return await ctx.send("No pokémon found.")
         num = max([pokemon.idx for pokemon in pokemons])
         length = len(str(num))
         embed = constants.Embed(title="Your pokemon:", description="")
         embed.set_footer(
-            text=f"Displaying {lower}-{min([upper, len(pokemons)])} of {len(pokemons)} pokémon"
+            text=f"Displaying {lower}-{min([upper, len(pokemons)])} of {size} pokémon"
         )
         for pokemon in pokemons:
             st = f"`{pokemon.idx:>{length}}` {pokemon.name} | Level: {pokemon.level} | IV: {pokemon.iv_percent*100:,.2f}%\n"
