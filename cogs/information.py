@@ -30,7 +30,7 @@ class TutorialSelect(discord.ui.Select):
         category = self.values[0]
         await self.tutorial.message.delete()
         embed, file = getattr(self.tutorial, category)
-        await interaction.response.send_message(embed=embed, file=file, view=self.view)
+        await interaction.channel.send(embed=embed, file=file, view=self.view)
 
 
 class Tutorial:

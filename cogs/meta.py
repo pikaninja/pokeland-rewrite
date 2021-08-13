@@ -2,6 +2,7 @@ import io
 import discord
 import traceback
 
+from async_lru import alru_cache
 from typing import Literal, Union
 
 from discord.ext import commands
@@ -24,6 +25,7 @@ class Meta(commands.Cog):
             )
         return True
 
+    @alru_cache()
     async def get_prefix(self, guild):
         guild = await self.bot.db.get_guild(guild.id)
         if not guild:
@@ -151,6 +153,7 @@ class Meta(commands.Cog):
             ctx.guild.id,
             prefix,
         )
+        self.get_prefix.invalidate(self, ctx.guild)
         await ctx.send(f"Set the server prefix to `{prefix}`")
 
     @prefix.command()
@@ -161,6 +164,7 @@ class Meta(commands.Cog):
         await self.bot.connection.execute(
             "UPDATE guilds SET prefix=$1 WHERE id = $2", None, ctx.guild.id
         )
+        self.get_prefix.invalidate(self, ctx.guild)
         await ctx.send(f"Reset the guild prefix to `{self.bot.config.prefix}`")
 
     @commands.command()
