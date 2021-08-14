@@ -4,5 +4,6 @@ jishaku
 toml
 psutil
 prettytable
+psutil
 async_lru
 git+https://github.com/bijij/discord-ext-store-true

@@ -5,6 +5,7 @@ import discord
 import pathlib
 import textwrap
 import traceback
+import importlib
 import dataclasses
 
 from typing import Union
@@ -183,6 +184,15 @@ class Admin(commands.Cog):
     async def reload(self, ctx, *, extension=None):
         """Reload an extension or all modified extensions"""
         if extension:
+            if extension.startswith("module."):
+                extension = extension.replace("module.", "")
+                try:
+                    module = __import__(extension)
+                    importlib.reload(module)
+                except Exception:
+                    return await ctx.send(f"```{traceback.format_exc()}```")
+                else:
+                    return await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
             try:
                 ctx.bot.reload_extension(extension)
             except Exception:

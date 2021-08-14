@@ -82,6 +82,26 @@ class Pokemon:
         return self.record["species_id"]
 
     @property
+    def nick(self):
+        return self.record["nick"]
+
+    @property
+    def favorite(self):
+        return self.record["favorite"]
+
+    @property
+    def pretty_name(self):
+        name = ""
+        if self.favorite:
+            name += "\N{REVOLVING HEARTS} "
+        
+        name += self.name
+        if self.nick:
+            name += f' "{self.nick}"'
+
+        return name
+
+    @property
     def data(self):
         return self.data_manager.get_species_by_id(self.species_id)
 

@@ -41,6 +41,8 @@ class Database(commands.Cog):
             filters["in_species_id"].append(list(self.bot.data.mythical.keys()))
         if flags and flags.ultrabeast:
             filters["in_species_id"].append(list(self.bot.data.ultra_beast.keys()))
+        if flags and flags.fav:
+            filters["favorite"].append(True)
 
         if filters:
             query, args = self.bot.db.format_query_list(filters, _or=False, start=start)
@@ -49,6 +51,7 @@ class Database(commands.Cog):
             query = ""
             args = []
 
+        print(query)
         return query, args
 
     def format_query(self, update, start=2):
@@ -127,6 +130,12 @@ class Database(commands.Cog):
             f"UPDATE pokemon SET {query} WHERE user_id = $1 AND idx = $2",
             *([user_id, idx] + args),
         )
+
+    async def update_selected_pokemon(self, user_id, update, *, connection=None):
+        connection = connection or self.connection
+        user_id = self.get_id_from_object(user_id)
+        selected = await connection.fetchval("SELECT selected FROM users WHERE id = $1", user_id)
+        await self.update_pokemon_by_idx(user_id, selected, update, connection=connection)
 
     async def get_next_idx(self, user_id, *, connection=None):
         connection = connection or self.connection

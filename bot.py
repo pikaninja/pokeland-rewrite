@@ -63,6 +63,18 @@ class Pokeland(store_true.StoreTrueMixin, commands.Bot):
             command_prefix=prefix, case_insensitive=True, strip_after_prefix=True
         )
 
+        self.add_check(
+            commands.has_permissions(
+                send_messages=True,
+                view_channel=True,
+                read_message_history=True,
+                add_reactions=True,
+                embed_links=True,
+                attach_files=True,
+                use_external_emojis=True
+            ).predicate
+        )
+
         self.loop.run_until_complete(self.setup())
 
     @property

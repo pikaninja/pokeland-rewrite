@@ -1,7 +1,8 @@
 import io
+import re
 import discord
 import traceback
-from helpers import constants
+from helpers import constants, methods
 from discord.ext import commands
 
 
@@ -26,6 +27,31 @@ class Bot(commands.Cog):
             )
 
         return True
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        """For replying to pings"""
+        if not hasattr(self, "PING_REGEX"):
+            self.PING_REGEX = re.compile(f"<@!?{self.bot.user.id}>")
+
+        if self.PING_REGEX.fullmatch(message.content):
+            prefix = await self.bot.get_cog("Meta").get_prefix(message.guild)
+            embed = constants.Embed(
+                title="Hello!",
+                description=f"I see you've pinged me.\n My prefix for this server is: `{prefix}` You can also mention me!"
+            )
+            embed.add_field(
+                name="Some useful commands",
+                value=methods.bullet_list([
+                    f"`{prefix}ping` to check if I'm alive",
+                    f"`{prefix}help` to get help",
+                    f"`{prefix}disable/enable` to enable or disable features",
+                    f"`{prefix}prefix set` to change the prefix"
+                ])
+
+            )
+            await message.channel.send(embed=embed)
+
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):

@@ -15,6 +15,7 @@ class PokemonFilters(flags.PosixFlags):
     legendary: bool = False
     mythical: bool = False
     ultrabeast: bool = False
+    fav: bool = False
 
 
 class DexFlags(flags.PosixFlags):
@@ -80,7 +81,7 @@ class Pokemon(commands.Cog):
             pokemon = await converters.PokemonConverter().convert(ctx, "")
         data = self.bot.data.get_species_by_id(pokemon.species_id)
         embed = constants.Embed(
-            title=f"Level {pokemon.level} {pokemon.name}",
+            title=f"Level {pokemon.level} {pokemon.pretty_name}",
             description=f"**XP**: {pokemon.xp}/{pokemon.xp_needed}\n**Nature:** {pokemon.nature}",
         )
         embed.add_field(
@@ -140,10 +141,34 @@ class Pokemon(commands.Cog):
             text=f"Displaying {lower}-{min([upper, len(pokemons)])} of {size} pokémon"
         )
         for pokemon in pokemons:
-            st = f"`{pokemon.idx:>{length}}` {pokemon.name} | Level: {pokemon.level} | IV: {pokemon.iv_percent*100:,.2f}%\n"
+            st = f"`{pokemon.idx:>{length}}` {pokemon.pretty_name} | Level: {pokemon.level} | IV: {pokemon.iv_percent*100:,.2f}%\n"
             embed.description += st
 
         await ctx.send(embed=embed)
+
+    @commands.command(aliases=("nick", "rename"))
+    async def nickname(self, ctx, *, nick = None):
+        """Change the nickname of your pokemon"""
+        if not 0 < len(nick) < 30:
+            return await ctx.send("Invalid size of nickname")
+        
+        await self.bot.db.update_selected_pokemon(ctx.author, dict(nick=nick))
+        if nick:
+            await ctx.send(f"You have changed your pokemon's nickname to {nick}")
+        else:
+            await ctx.send(f"You have reset your pokemon's nickname")
+
+    @commands.command(aliases=("addfav", "addfavorite", "fav"))
+    async def favorite(self, ctx):
+        """Favorite your selected pokemon"""
+        await self.bot.db.update_selected_pokemon(ctx.author, dict(favorite=True))
+        await ctx.send("You have favorited your selected pokemon")
+
+    @commands.command(aliases=("removefav", "removefavorite", "unfav"))
+    async def unfavorite(self, ctx):
+        """Favorite your selected pokemon"""
+        await self.bot.db.update_selected_pokemon(ctx.author, dict(favorite=False))
+        await ctx.send("You have unfavorited your selected pokemon")
 
     async def pokemon_dex(self, ctx, pokemon):
         pokemon, shiny = pokemon
@@ -220,7 +245,6 @@ class Pokemon(commands.Cog):
                     }
 
                 if flags.order:
-
                     def key(item):
                         if entry := dex.get(item):
                             return 60000 + entry.count
