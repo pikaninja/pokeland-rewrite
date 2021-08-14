@@ -1,6 +1,7 @@
 import discord
 import copy
 import aiohttp
+import datetime
 from discord.ext import commands, store_true
 from data.manager import DataManager
 import logging
@@ -74,12 +75,17 @@ class Pokeland(store_true.StoreTrueMixin, commands.Bot):
                 use_external_emojis=True
             ).predicate
         )
-
+        self._uptime = discord.utils.utcnow()
+    
         self.loop.run_until_complete(self.setup())
 
     @property
     def db(self):
         return self.get_cog("Database")
+
+    @property
+    def uptime(self):
+        return discord.utils.format_dt(self._uptime, "R")
 
     async def get_context(self, message, cls=None):
         cls = cls or self.context

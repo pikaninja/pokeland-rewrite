@@ -118,6 +118,7 @@ class Information(commands.Cog):
             name="Pokemon", value=f"{await self.count_pokemon():,}", inline=False
         )
         embed.add_field(name="Guilds", value=f"{len(ctx.bot.guilds):,}", inline=False)
+        embed.add_field(name="Uptime", value=f"Started {ctx.bot.uptime}")
         await ctx.send(embed=embed)
 
     @commands.command()
