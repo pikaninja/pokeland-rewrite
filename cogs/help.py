@@ -127,6 +127,20 @@ class CustomHelp(commands.HelpCommand):
                 name="Cooldown",
                 value=f"{command._buckets._cooldown.rate} per {int(command._buckets._cooldown.per)} seconds",
             )
+        
+        permissions = []
+        for check in command.checks:
+            print(check.__qualname__)
+            if check.__qualname__.partition(".")[0] in ("has_permissions", "has_guild_permissions"):
+                perms = await methods.get_permissions(check)
+                permissions.extend(perm.replace("_", " ").replace("guild", "server").title() for perm in perms.keys())
+        if permissions:
+            embed.add_field(
+                name="Required permissions",
+                value=methods.bullet_list(permissions)
+            )
+
+
         destination = self.get_destination()
         await destination.send(embed=embed)
 

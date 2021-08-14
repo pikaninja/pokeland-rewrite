@@ -1,9 +1,12 @@
 import io
+import sys
 import copy
 import time
+import psutil
 import discord
 import pathlib
 import textwrap
+import datetime
 import traceback
 import importlib
 import dataclasses
@@ -42,6 +45,7 @@ class Admin(commands.Cog):
     def __init__(self, bot):
         if not hasattr(bot, "extension_checked_at"):
             bot.extension_checked_at = time.time()
+        self.process = psutil.Process()
 
     @commands.group(case_insensitive=True)
     @commands.is_owner()
@@ -81,6 +85,7 @@ class Admin(commands.Cog):
     @dev.command()
     @commands.is_owner()
     async def benchmark(self, ctx, times=100):
+        """Benchmark postgresql"""
         insert = BenchmarkTime(0, 0, 999, -1)
         delete = BenchmarkTime(0, 0, 999, -1)
         update = BenchmarkTime(0, 0, 999, -1)
@@ -257,6 +262,35 @@ class Admin(commands.Cog):
 
         output = f"```{value}\n{result}```"
         await ctx.send(output)
+
+    @dev.command(aliases=("sys", "sysinfo", "systeminfo"))
+    @commands.is_owner()
+    async def system(self, ctx):
+        """View system information"""
+        embed = constants.Embed(title="System Infomation")
+        embed.add_field(name="Library", value=f"v{discord.__version__}")
+        embed.add_field(name="Python", value=f"v{sys.version}")
+        embed.add_field(name="OS", value=sys.platform)
+        embed.add_field(name="API", value=discord.http.Route.BASE)
+        embed.add_field(name="Latency", value=f"`{ctx.bot.latency*1000:,.2f}`ms")
+
+        memory_usage = self.process.memory_full_info().uss / 1024 ** 2
+        cpu_usage = self.process.cpu_percent()
+        embed.add_field(
+            name="Process",
+            value=f"{memory_usage:.2f} MiB\n{cpu_usage:.2f}% CPU\n{self.process.num_threads()} threads",
+        )
+
+        boot_time = datetime.datetime.fromtimestamp(psutil.boot_time()).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
+        memory = psutil.virtual_memory()
+        embed.add_field(
+            name="System",
+            value=f"Memory: `{memory.used/1000000:,.2f}` MiB used out of `{memory.total/1000000:,.2f}` MiB(`{memory.percent}` percent)\n Booted at {boot_time}",
+        )
+
+        await ctx.send(embed=embed)
 
 
 def setup(bot):

@@ -6,6 +6,7 @@ from typing import List, Literal
 from collections import defaultdict
 
 from discord.ext import commands
+from discord.ext.commands import converter
 from helpers import constants, converters, models, checks, flags, methods
 
 
@@ -146,7 +147,16 @@ class Pokemon(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    @commands.command()
+    @checks.has_started()
+    async def select(self, ctx, pokemon: converters.PokemonConverter):
+        """Select a new pokemon to levelup"""
+        await self.bot.connection.execute("UPDATE users SET selected = $1 WHERE id = $2", pokemon.idx, ctx.author.id)
+        await ctx.send(f"Selected {pokemon.pretty_name}, id: {pokemon.idx}")
+
+
     @commands.command(aliases=("nick", "rename"))
+    @checks.has_started()
     async def nickname(self, ctx, *, nick = None):
         """Change the nickname of your pokemon"""
         if not 0 < len(nick) < 30:
@@ -159,12 +169,18 @@ class Pokemon(commands.Cog):
             await ctx.send(f"You have reset your pokemon's nickname")
 
     @commands.command(aliases=("addfav", "addfavorite", "fav"))
-    async def favorite(self, ctx):
+    @checks.has_started()
+    async def favorite(self, ctx, pokemon: converters.PokemonConverter = None):
         """Favorite your selected pokemon"""
-        await self.bot.db.update_selected_pokemon(ctx.author, dict(favorite=True))
-        await ctx.send("You have favorited your selected pokemon")
+        if not pokemon:
+            await self.bot.db.update_selected_pokemon(ctx.author, dict(favorite=True))
+            return await ctx.send("You have favorited your selected pokemon")
+        
+        await self.bot.db.update_pokemon_by_idx(ctx.author, pokemon.idx, dict(favorite=True))
+        await ctx.send(f"You have favorited the pokemon with the id of {pokemon.idx}")
 
     @commands.command(aliases=("removefav", "removefavorite", "unfav"))
+    @checks.has_started()
     async def unfavorite(self, ctx):
         """Favorite your selected pokemon"""
         await self.bot.db.update_selected_pokemon(ctx.author, dict(favorite=False))

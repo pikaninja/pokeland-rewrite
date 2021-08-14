@@ -132,6 +132,7 @@ class Spawning(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 20, type=commands.BucketType.channel)
     async def hint(self, ctx):
+        """View a hint for the currently spawned pokemon"""
         if not self.spawns[ctx.channel.id]["pokemon"]:
             return await ctx.send("Theres no wild pokemon currently!")
 

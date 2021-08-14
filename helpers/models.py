@@ -92,6 +92,8 @@ class Pokemon:
     @property
     def pretty_name(self):
         name = ""
+        if self.shiny:
+            name += "\N{SPARKLES} "
         if self.favorite:
             name += "\N{REVOLVING HEARTS} "
         
