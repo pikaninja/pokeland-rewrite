@@ -1,4 +1,5 @@
 import toml
+import glob
 from typing import List, NamedTuple
 
 with open("config.toml") as f:
@@ -15,7 +16,10 @@ class Config(NamedTuple):
     debug: bool
 
 
-extensions = [f"cogs.{extension}" for extension in config["bot"]["extensions"]]
+if config["bot"]["extensions"] == "all":
+    extensions = [f"cogs.{extension[5:-3]}" for extension in list(glob.glob("cogs/*.py"))]
+else:
+    extensions = [f"cogs.{extension}" for extension in config["bot"]["extensions"]]
 extensions.extend(config["bot"]["extra"])
 config = Config(
     config["bot"]["token"],
