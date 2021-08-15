@@ -34,6 +34,7 @@ class User:
     id: int
     started: datetime.datetime
     disabled: bool
+    staff: bool
     order_by: str
     selected: int
     # economy
