@@ -1,12 +1,3 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from typing import Optional, List
-
-    from helpers.context import PokeContext
-
 import discord
 from discord.ext.commands import cog
 
@@ -47,15 +38,15 @@ class HelpSelect(discord.ui.Select):
         await self.help_command.send_cog_help(selected, view=self.view)
 
 class FormatCogHelp(menus.ListPageSource):
-    def __init__(self, entries, ctx: PokeContext, cog: commands.Cog, per_page: Optional[int] = 5):
+    def __init__(self, entries, ctx, cog, per_page = 5):
         super().__init__(
             entries=entries,
             per_page=per_page
         )
         self.ctx = ctx
-        self.cog: commands.Cog = cog
+        self.cog = cog
     
-    async def format_page(self, menu: menus.Menu, entry: List[commands.Command]) -> discord.Embed:
+    async def format_page(self, menu, entry):
         embed = constants.Embed(
             title = f"{self.cog.qualified_name} Help!",
             description=f"Use `{self.ctx.prefix}help <command/category>` for more information."
@@ -79,7 +70,7 @@ class FormatCogHelp(menus.ListPageSource):
         return embed
 
 class FormatGroupHelp(menus.ListPageSource):
-    def __init__(self, entries, ctx: PokeContext, group: commands.Group, per_page: Optional[int] = 5):
+    def __init__(self, entries, ctx, group, per_page = 5):
         super().__init__(
             entries=entries,
             per_page=per_page
