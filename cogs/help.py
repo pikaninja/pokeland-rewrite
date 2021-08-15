@@ -3,10 +3,10 @@ from discord.ext.commands import cog
 
 from helpers import constants, methods, misc
 from discord.ext import commands, menus
-from discord.ext.menus.views import ViewMenuPages
+
 
 class HelpSelect(discord.ui.Select):
-    def __init__(self, help_command, filtered_mapping, view):
+    def __init__(self, help_command, filtered_mapping):
         self.help_command = help_command
         super().__init__(
             placeholder="Select a category",
@@ -35,21 +35,19 @@ class HelpSelect(discord.ui.Select):
                 self.help_command.context
             )
         selected = self.help_command.context.bot.get_cog(self.values[0])
-        await self.help_command.send_cog_help(selected, view=self.view)
+        await self.help_command.send_cog_help(selected, select=self)
+
 
 class FormatCogHelp(menus.ListPageSource):
-    def __init__(self, entries, ctx, cog, per_page = 5):
-        super().__init__(
-            entries=entries,
-            per_page=per_page
-        )
+    def __init__(self, entries, ctx, cog, per_page=5):
+        super().__init__(entries=entries, per_page=per_page)
         self.ctx = ctx
         self.cog = cog
-    
+
     async def format_page(self, menu, entry):
         embed = constants.Embed(
-            title = f"{self.cog.qualified_name} Help!",
-            description=f"Use `{self.ctx.prefix}help <command/category>` for more information."
+            title=f"{self.cog.qualified_name} Help!",
+            description=f"Use `{self.ctx.prefix}help <command/category>` for more information.",
         )
 
         embed.set_thumbnail(url=self.ctx.me.avatar.url)
@@ -61,44 +59,37 @@ class FormatCogHelp(menus.ListPageSource):
             if isinstance(command, commands.Group):
                 name = f"[Group] {name}"
 
-            embed.add_field(
-                name=name,
-                value= value,
-                inline=False
-            )
-        
+            embed.add_field(name=name, value=value, inline=False)
+
         return embed
 
+
 class FormatGroupHelp(menus.ListPageSource):
-    def __init__(self, entries, ctx, group, per_page = 5):
-        super().__init__(
-            entries=entries,
-            per_page=per_page
-        )
+    def __init__(self, entries, ctx, group, per_page=5):
+        super().__init__(entries=entries, per_page=per_page)
         self.ctx = ctx
         self.group = group
-    
+
     async def format_page(self, menu, entries):
         embed = constants.Embed(
-            title = f"{self.group.qualified_name} Help!",
-            description=f"Use `{self.ctx.prefix}help <command/category>` for more information."
+            title=f"{self.group.qualified_name} Help!",
+            description=f"Use `{self.ctx.prefix}help <command/category>` for more information.",
         )
 
         embed.set_thumbnail(url=self.ctx.me.avatar.url)
 
         for command in entries:
             help = command.help
-        
+
             if isinstance(command, commands.Group):
                 help = f"[Group] {help}"
 
             embed.add_field(
-                name=f"{command} {command.signature}",
-                value=help,
-                inline=False
+                name=f"{command} {command.signature}", value=help, inline=False
             )
 
         return embed
+
 
 class CustomHelp(commands.HelpCommand):
     current_message = None
@@ -113,6 +104,16 @@ class CustomHelp(commands.HelpCommand):
         else:
             alias = command.name if not parent else f"{parent} {command.name}"
         return f"{alias} {command.signature}"
+
+    async def get_select(self, mapping=None):
+        if not mapping:
+            mapping = {}
+            for cog in self.context.bot.cogs:
+                commands = await self.filter_commands(
+                    self.context.bot.cogs[cog].get_commands(), sort=True
+                )
+                mapping[self.context.bot.cogs[cog]] = commands
+        return HelpSelect(self, mapping)
 
     async def send_bot_help(self, mapping):
         embed = constants.Embed(
@@ -139,19 +140,24 @@ class CustomHelp(commands.HelpCommand):
             )
 
         view = misc.RestrictedView(owner=self.context.author)
-        view.add_item(HelpSelect(self, filtered, view))
+        view.add_item(await self.get_select(filtered))
         destination = self.get_destination()
         self.current_message = await destination.send(embed=embed, view=view)
 
-    async def send_cog_help(self, cog, view=None):
+    async def send_cog_help(self, cog, select=None):
         commands = await self.filter_commands(cog.get_commands())
 
         if not commands:
             return
-        
+
         source = FormatCogHelp(commands, self.context, cog)
 
-        await ViewMenuPages(source=source).start(self.context)
+        if not select:
+            select = await self.get_select()
+
+        await misc.EditableMenuPages(
+            source=source, select=select, message=self.current_message
+        ).start(self.context)
 
     async def send_command_help(self, command):
         embed = constants.Embed(
@@ -178,19 +184,23 @@ class CustomHelp(commands.HelpCommand):
                 name="Cooldown",
                 value=f"{command._buckets._cooldown.rate} per {int(command._buckets._cooldown.per)} seconds",
             )
-        
+
         permissions = []
         for check in command.checks:
             print(check.__qualname__)
-            if check.__qualname__.partition(".")[0] in ("has_permissions", "has_guild_permissions"):
+            if check.__qualname__.partition(".")[0] in (
+                "has_permissions",
+                "has_guild_permissions",
+            ):
                 perms = await methods.get_permissions(check)
-                permissions.extend(perm.replace("_", " ").replace("guild", "server").title() for perm in perms.keys())
+                permissions.extend(
+                    perm.replace("_", " ").replace("guild", "server").title()
+                    for perm in perms.keys()
+                )
         if permissions:
             embed.add_field(
-                name="Required permissions",
-                value=methods.bullet_list(permissions)
+                name="Required permissions", value=methods.bullet_list(permissions)
             )
-
 
         destination = self.get_destination()
         await destination.send(embed=embed)
@@ -199,10 +209,10 @@ class CustomHelp(commands.HelpCommand):
         cmds = await self.filter_commands(group.commands)
         if not cmds:
             return await self.send_command_help(group)
-        
+
         source = FormatGroupHelp(cmds, self.context, group)
 
-        await ViewMenuPages(source=source).start(self.context)
+        await misc.EditableMenuPages(source=source).start(self.context)
 
 
 def setup(bot):

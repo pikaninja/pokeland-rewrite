@@ -93,7 +93,9 @@ class Spawning(commands.Cog):
             )
 
         if self.bot.config.debug:
-            await ctx.send(f"Pokemon caught in {time.perf_counter() - self.spawns[ctx.channel.id]['timestamp']} seconds")
+            await ctx.send(
+                f"Pokemon caught in {time.perf_counter() - self.spawns[ctx.channel.id]['timestamp']} seconds"
+            )
         self.spawns[ctx.channel.id]["pokemon"] = None
 
         percentage = 1 / 4096  # in future make changable

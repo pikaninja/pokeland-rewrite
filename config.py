@@ -17,7 +17,9 @@ class Config(NamedTuple):
 
 
 if config["bot"]["extensions"] == "all":
-    extensions = [f"cogs.{extension[5:-3]}" for extension in list(glob.glob("cogs/*.py"))]
+    extensions = [
+        f"cogs.{extension[5:-3]}" for extension in list(glob.glob("cogs/*.py"))
+    ]
 else:
     extensions = [f"cogs.{extension}" for extension in config["bot"]["extensions"]]
 extensions.extend(config["bot"]["extra"])
@@ -28,5 +30,5 @@ config = Config(
     extensions,
     config["bot"]["error_log_channel_id"],
     config["bot"]["image_server_url"],
-    config["bot"]["debug"]
+    config["bot"]["debug"],
 )

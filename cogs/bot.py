@@ -15,9 +15,10 @@ class Bot(commands.Cog):
 
     async def bot_check(self, ctx):
         if self.bot.config.debug and not await self.bot.is_owner(ctx.author):
-            raise commands.CheckFailure("The bot is currently in debug mode, only my developer can use commands!")
+            raise commands.CheckFailure(
+                "The bot is currently in debug mode, only my developer can use commands!"
+            )
         return True
-
 
     async def bot_check_once(self, ctx):
         bucket = self.cd.get_bucket(ctx.message)
@@ -38,20 +39,20 @@ class Bot(commands.Cog):
             prefix = await self.bot.get_cog("Meta").get_prefix(message.guild)
             embed = constants.Embed(
                 title="Hello!",
-                description=f"I see you've pinged me.\n My prefix for this server is: `{prefix}` You can also mention me!"
+                description=f"I see you've pinged me.\n My prefix for this server is: `{prefix}` You can also mention me!",
             )
             embed.add_field(
                 name="Some useful commands",
-                value=methods.bullet_list([
-                    f"`{prefix}ping` to check if I'm alive",
-                    f"`{prefix}help` to get help",
-                    f"`{prefix}disable/enable` to enable or disable features",
-                    f"`{prefix}prefix set` to change the prefix"
-                ])
-
+                value=methods.bullet_list(
+                    [
+                        f"`{prefix}ping` to check if I'm alive",
+                        f"`{prefix}help` to get help",
+                        f"`{prefix}disable/enable` to enable or disable features",
+                        f"`{prefix}prefix set` to change the prefix",
+                    ]
+                ),
             )
             await message.channel.send(embed=embed)
-
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):

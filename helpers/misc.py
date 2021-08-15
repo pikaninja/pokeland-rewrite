@@ -1,5 +1,6 @@
 import time
 from discord.ui import View
+from discord.ext.menus.views import ViewMenuPages
 
 
 class RestrictedView(View):
@@ -15,6 +16,26 @@ class RestrictedView(View):
             )
             return False
         return True
+
+
+class EditableMenuPages(ViewMenuPages):
+    def __init__(self, source, select=None, message=None):
+        super().__init__(source)
+        self.select = select
+        self.msg = message
+
+    async def send_initial_message(self, ctx, channel):
+        page = await self._source.get_page(0)
+        kwargs = await self._get_kwargs_from_page(page)
+        view = self.build_view()
+        if self.select:
+            if not view:
+                view = RestrictedView(owner=ctx.author)
+            view.add_item(self.select)
+        if self.msg:
+            await self.msg.edit(**kwargs, view=view)
+            return self.msg
+        return await channel.send(**kwargs, view=view)
 
 
 class StopWatch:

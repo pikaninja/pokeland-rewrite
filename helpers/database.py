@@ -134,8 +134,12 @@ class Database(commands.Cog):
     async def update_selected_pokemon(self, user_id, update, *, connection=None):
         connection = connection or self.connection
         user_id = self.get_id_from_object(user_id)
-        selected = await connection.fetchval("SELECT selected FROM users WHERE id = $1", user_id)
-        await self.update_pokemon_by_idx(user_id, selected, update, connection=connection)
+        selected = await connection.fetchval(
+            "SELECT selected FROM users WHERE id = $1", user_id
+        )
+        await self.update_pokemon_by_idx(
+            user_id, selected, update, connection=connection
+        )
 
     async def get_next_idx(self, user_id, *, connection=None):
         connection = connection or self.connection

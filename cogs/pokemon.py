@@ -132,7 +132,11 @@ class Pokemon(commands.Cog):
             )
         ]
         constraints, _ = self.bot.db.format_query_from_flags(flags, start=2)
-        size = await self.bot.connection.fetchval(f"SELECT COUNT(id) FROM pokemon WHERE user_id = $1 {constraints}", ctx.author.id, *args)
+        size = await self.bot.connection.fetchval(
+            f"SELECT COUNT(id) FROM pokemon WHERE user_id = $1 {constraints}",
+            ctx.author.id,
+            *args,
+        )
         if not pokemons:
             return await ctx.send("No pokémon found.")
         num = max([pokemon.idx for pokemon in pokemons])
@@ -151,17 +155,18 @@ class Pokemon(commands.Cog):
     @checks.has_started()
     async def select(self, ctx, pokemon: converters.PokemonConverter):
         """Select a new pokemon to levelup"""
-        await self.bot.connection.execute("UPDATE users SET selected = $1 WHERE id = $2", pokemon.idx, ctx.author.id)
+        await self.bot.connection.execute(
+            "UPDATE users SET selected = $1 WHERE id = $2", pokemon.idx, ctx.author.id
+        )
         await ctx.send(f"Selected {pokemon.pretty_name}, id: {pokemon.idx}")
-
 
     @commands.command(aliases=("nick", "rename"))
     @checks.has_started()
-    async def nickname(self, ctx, *, nick = None):
+    async def nickname(self, ctx, *, nick=None):
         """Change the nickname of your pokemon"""
         if not 0 < len(nick) < 30:
             return await ctx.send("Invalid size of nickname")
-        
+
         await self.bot.db.update_selected_pokemon(ctx.author, dict(nick=nick))
         if nick:
             await ctx.send(f"You have changed your pokemon's nickname to {nick}")
@@ -175,8 +180,10 @@ class Pokemon(commands.Cog):
         if not pokemon:
             await self.bot.db.update_selected_pokemon(ctx.author, dict(favorite=True))
             return await ctx.send("You have favorited your selected pokemon")
-        
-        await self.bot.db.update_pokemon_by_idx(ctx.author, pokemon.idx, dict(favorite=True))
+
+        await self.bot.db.update_pokemon_by_idx(
+            ctx.author, pokemon.idx, dict(favorite=True)
+        )
         await ctx.send(f"You have favorited the pokemon with the id of {pokemon.idx}")
 
     @commands.command(aliases=("removefav", "removefavorite", "unfav"))
@@ -261,6 +268,7 @@ class Pokemon(commands.Cog):
                     }
 
                 if flags.order:
+
                     def key(item):
                         if entry := dex.get(item):
                             return 60000 + entry.count

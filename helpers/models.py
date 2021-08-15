@@ -97,7 +97,7 @@ class Pokemon:
             name += "\N{SPARKLES} "
         if self.favorite:
             name += "\N{REVOLVING HEARTS} "
-        
+
         name += self.name
         if self.nick:
             name += f' "{self.nick}"'

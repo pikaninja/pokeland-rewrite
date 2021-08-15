@@ -72,11 +72,11 @@ class Pokeland(store_true.StoreTrueMixin, commands.Bot):
                 add_reactions=True,
                 embed_links=True,
                 attach_files=True,
-                use_external_emojis=True
+                use_external_emojis=True,
             ).predicate
         )
         self._uptime = discord.utils.utcnow()
-    
+
         self.loop.run_until_complete(self.setup())
 
     @property
