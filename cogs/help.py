@@ -78,7 +78,7 @@ class FormatGroupHelp(menus.ListPageSource):
         self.ctx = ctx
         self.group = group
     
-    async def format_page(self, menu: menus.Menu, entries: List[commands.Command]) -> discord.Embed:
+    async def format_page(self, menu, entries):
         embed = constants.Embed(
             title = f"{self.group.qualified_name} Help!",
             description=f"Use `{self.ctx.prefix}help <command/category>` for more information."
