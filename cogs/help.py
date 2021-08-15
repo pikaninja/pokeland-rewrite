@@ -2,8 +2,8 @@ import discord
 from discord.ext.commands import cog
 
 from helpers import constants, methods, misc
-from discord.ext import commands
-
+from discord.ext import commands, menus
+from discord.ext.menus.views import ViewMenuPages
 
 class HelpSelect(discord.ui.Select):
     def __init__(self, help_command, filtered_mapping, view):
@@ -37,6 +37,68 @@ class HelpSelect(discord.ui.Select):
         selected = self.help_command.context.bot.get_cog(self.values[0])
         await self.help_command.send_cog_help(selected, view=self.view)
 
+class FormatCogHelp(menus.ListPageSource):
+    def __init__(self, entries, ctx, cog, per_page = 5):
+        super().__init__(
+            entries=entries,
+            per_page=per_page
+        )
+        self.ctx = ctx
+        self.cog = cog
+    
+    async def format_page(self, menu, entry):
+        embed = constants.Embed(
+            title = f"{self.cog.qualified_name} Help!",
+            description=f"Use `{self.ctx.prefix}help <command/category>` for more information."
+        )
+
+        embed.set_thumbnail(url=self.ctx.me.avatar.url)
+
+        for command in entry:
+            name = f"{command.name} {command.signature}"
+            value = f"{command.help or 'No help given'}"
+
+            if isinstance(command, commands.Group):
+                name = f"[Group] {name}"
+
+            embed.add_field(
+                name=name,
+                value= value,
+                inline=False
+            )
+        
+        return embed
+
+class FormatGroupHelp(menus.ListPageSource):
+    def __init__(self, entries, ctx, group, per_page = 5):
+        super().__init__(
+            entries=entries,
+            per_page=per_page
+        )
+        self.ctx = ctx
+        self.group = group
+    
+    async def format_page(self, menu, entries):
+        embed = constants.Embed(
+            title = f"{self.group.qualified_name} Help!",
+            description=f"Use `{self.ctx.prefix}help <command/category>` for more information."
+        )
+
+        embed.set_thumbnail(url=self.ctx.me.avatar.url)
+
+        for command in entries:
+            help = command.help
+        
+            if isinstance(command, commands.Group):
+                help = f"[Group] {help}"
+
+            embed.add_field(
+                name=f"{command} {command.signature}",
+                value=help,
+                inline=False
+            )
+
+        return embed
 
 class CustomHelp(commands.HelpCommand):
     current_message = None
@@ -81,26 +143,15 @@ class CustomHelp(commands.HelpCommand):
         destination = self.get_destination()
         self.current_message = await destination.send(embed=embed, view=view)
 
-    def add_commands_to_embed(self, embed, cmds):
-        for cmd in cmds:
-            help = cmd.help or "No help provided..."
-            if isinstance(cmd, commands.Group):
-                help = f"[Group] {help}"
-            embed.add_field(
-                name=self.get_command_signature(cmd), value=help, inline=False
-            )
-
     async def send_cog_help(self, cog, view=None):
-        embed = constants.Embed(title=f"{cog.qualified_name} Help!".title())
-        embed.set_thumbnail(url=self.context.me.avatar.url)
-        self.add_commands_to_embed(
-            embed, await self.filter_commands(cog.get_commands())
-        )
-        if self.current_message:
-            await self.current_message.edit(embed=embed, view=view)
-        else:
-            destination = self.get_destination()
-            await destination.send(embed=embed)
+        commands = await self.filter_commands(cog.get_commands())
+
+        if not commands:
+            return
+        
+        source = FormatCogHelp(commands, self.context, cog)
+
+        await ViewMenuPages(source=source).start(self.context)
 
     async def send_command_help(self, command):
         embed = constants.Embed(
@@ -148,13 +199,10 @@ class CustomHelp(commands.HelpCommand):
         cmds = await self.filter_commands(group.commands)
         if not cmds:
             return await self.send_command_help(group)
-        embed = constants.Embed(
-            title=self.get_command_signature(group),
-            description=f"{group.help or 'No help provided...'}\nUse `{self.context.prefix}help <command>` for more infomation",
-        )
-        self.add_commands_to_embed(embed, cmds)
-        destination = self.get_destination()
-        await destination.send(embed=embed)
+        
+        source = FormatGroupHelp(cmds, self.context, group)
+
+        await ViewMenuPages(source=source).start(self.context)
 
 
 def setup(bot):

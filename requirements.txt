@@ -1,4 +1,4 @@
-git+https://github.com/Rapptz/discord.py
+git+https://github.com/Rapptz/discord.py.git@master
 asyncpg
 jishaku
 toml
@@ -7,3 +7,5 @@ prettytable
 psutil
 async_lru
 git+https://github.com/bijij/discord-ext-store-true
+git+https://github.com/oliver-ni/discord-ext-menus-views
+git+https://github.com/Rapptz/discord-ext-menus
