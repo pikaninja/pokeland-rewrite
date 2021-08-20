@@ -155,9 +155,11 @@ class CustomHelp(commands.HelpCommand):
         if not select:
             select = await self.get_select()
 
-        await misc.EditableMenuPages(
+        menu = misc.EditableMenuPages(
             source=source, select=select, message=self.current_message
-        ).start(self.context)
+        )
+        await menu.start(self.context)
+        self.current_message = menu.message
 
     async def send_command_help(self, command):
         embed = constants.Embed(

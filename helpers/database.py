@@ -119,7 +119,7 @@ class Database(commands.Cog):
         connection = connection or self.connection
         user_id = self.get_id_from_object(user_id)
         return await connection.fetchrow(
-            "SELECT * FROM pokemon WHERE user_id = $1 AND idx = $2", user_id, idx
+            "SELECT * FROM pokemon WHERE user_id = $1 AND idx = $2 AND market_price is NULL", user_id, idx
         )
 
     async def update_pokemon_by_idx(self, user_id, idx, update, *, connection=None):

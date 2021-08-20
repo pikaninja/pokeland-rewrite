@@ -45,6 +45,9 @@ CREATE TABLE pokemon(
     idx INT NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
+    --for market
+    market_price INT DEFAULT NULL,
+
     --general pokemon info
     species_id INT NOT NULL,
     level INT NOT NULL CHECK(level <= 100 AND level >= 0),

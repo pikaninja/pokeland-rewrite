@@ -65,7 +65,7 @@ class Pokeland(store_true.StoreTrueMixin, commands.Bot):
         )
 
         self.add_check(
-            commands.has_permissions(
+            commands.bot_has_permissions(
                 send_messages=True,
                 view_channel=True,
                 read_message_history=True,

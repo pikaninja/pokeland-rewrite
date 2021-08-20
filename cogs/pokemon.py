@@ -43,7 +43,7 @@ class Pokemon(commands.Cog):
         )
         for generation, pokemon in constants.STARTERS.items():
             embed.add_field(
-                name=f"Generation {generation}", value=",".join(pokemon), inline=False
+                name=f"Generation {generation}", value=", ".join(pokemon), inline=False
             )
 
         await ctx.send(embed=embed)
@@ -120,7 +120,7 @@ class Pokemon(commands.Cog):
 
         lower = (page - 1) * 15 + 1
         upper = (page) * 15
-        query = f"SELECT * FROM (SELECT *, rank() over(order by ({(await self.bot.db.get_user(ctx.author)).order_by})) as rank FROM pokemon WHERE user_id = $1 {constraints}) as _ WHERE user_id = $1 AND rank >= $2 AND rank <= $3 {constraints} ORDER BY rank ASC"
+        query = f"SELECT * FROM (SELECT *, rank() over(order by ({(await self.bot.db.get_user(ctx.author)).order_by})) as rank FROM pokemon WHERE user_id = $1 AND market_price is NULL {constraints}) as _ WHERE user_id = $1 AND market_price is NULL AND rank >= $2 AND rank <= $3 {constraints} ORDER BY rank ASC"
         pokemons = [
             models.Pokemon(pokemon, self.bot.data)
             for pokemon in await self.bot.connection.fetch(
@@ -133,7 +133,7 @@ class Pokemon(commands.Cog):
         ]
         constraints, _ = self.bot.db.format_query_from_flags(flags, start=2)
         size = await self.bot.connection.fetchval(
-            f"SELECT COUNT(id) FROM pokemon WHERE user_id = $1 {constraints}",
+            f"SELECT COUNT(id) FROM pokemon WHERE user_id = $1 AND market_price = NULL{constraints}",
             ctx.author.id,
             *args,
         )
